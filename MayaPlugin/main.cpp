@@ -4,6 +4,7 @@
 using namespace std;
 
 MCallbackIdArray myCallbackArray;
+float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
 
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
@@ -12,7 +13,35 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 {
-	MGlobal::displayInfo("Current time: ");
+	CurrentTime += elapsedTime;
+	MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
+}
+
+void addedNodeFunction(MObject &node, void*clientData) //look at this function with teachers
+{
+	MGlobal::displayInfo("created: " + MFnTransform(node).name());
+
+	/*connecting the new node the the worldmatrix function*/
+	if (node.hasFn(MFn::kTransform))
+	{
+		MStatus Result = MS::kSuccess;
+		MFnTransform trans = node;
+		MDagPath meshDag = MDagPath::getAPathTo(trans.child(0));
+		MCallbackId newId = MDagMessage::addWorldMatrixModifiedCallback(meshDag, WorldMatrixModified, NULL, &Result);
+		if (Result == MS::kSuccess)
+		{
+			if (myCallbackArray.append(newId) == MS::kSuccess)
+			{
+				MGlobal::displayInfo(trans.name() + " Successfully added to the MatrixModified Function");
+			}
+		}
+	}
+}
+//attrubute change
+
+void changedNameFunction(MObject &node, const MString &str, void*clientData)
+{
+	MGlobal::displayInfo("name changed, new name: " + MFnDagNode(node).name());
 }
 
 EXPORT MStatus initializePlugin(MObject obj)
@@ -27,6 +56,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 
 	MStatus loopResults = MS::kSuccess;
 
+	/*adding callback for matrix change in items that already exist*/
 	MItDag meshIt(MItDag::kBreadthFirst, MFn::kTransform, &res);
 	for (; !meshIt.isDone(); meshIt.next())
 	{
@@ -46,8 +76,18 @@ EXPORT MStatus initializePlugin(MObject obj)
 			{
 				MGlobal::displayInfo("failed to connect");
 			}
+			/*newId = MNodeMessage::addNameChangedCallback(trans.child(0), changedNameFunction, NULL, &loopResults);
+			if (loopResults == MS::kSuccess)
+			{
+				if (myCallbackArray.append(newId) == MS::kSuccess)
+				{
+					MGlobal::displayInfo("Connected the NameChangeFunction");
+				}
+				else
+					MGlobal::displayInfo("failed to connect NameChangeFunction");
+			}*/
 		}
-
+		
 
 		/*MDagPath meshDag = MDagPath::getAPathTo(meshIt.currentItem());
 		MCallbackId newId = MDagMessage::addWorldMatrixModifiedCallback(meshDag, WorldMatrixModified, NULL, &loopResults);
@@ -76,6 +116,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 				MGlobal::displayInfo("failed to connest");
 		} */
 	}
+	/*adding callback for time*/
 	MCallbackId newId = MTimerMessage::addTimerCallback(5, elapsedTimeFunction, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
@@ -84,6 +125,32 @@ EXPORT MStatus initializePlugin(MObject obj)
 			MGlobal::displayInfo("timer made");
 		}
 	}
+	else
+		MGlobal::displayInfo("failed to create timer");
+
+	newId = MNodeMessage::addNameChangedCallback(MObject::kNullObj, changedNameFunction, NULL, &loopResults);
+	if (loopResults == MS::kSuccess)
+	{
+		if (myCallbackArray.append(newId) == MS::kSuccess)
+		{
+			MGlobal::displayInfo("Connected the NameChangeFunction");
+		}
+		else
+			MGlobal::displayInfo("failed to connect NameChangeFunction");
+	}
+
+	/*adding callback for creating node*/
+	newId = MDGMessage::addNodeAddedCallback(addedNodeFunction, kDefaultNodeType, NULL, &loopResults);
+	if (loopResults == MS::kSuccess)
+	{
+		if (myCallbackArray.append(newId) == MS::kSuccess)
+		{
+			MGlobal::displayInfo("created addNodeCallback function");
+		}
+	}
+	else
+		MGlobal::displayInfo("Failed to create addNodeCallback function");
+
 	return res;
 }
 
