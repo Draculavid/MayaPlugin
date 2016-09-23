@@ -17,6 +17,26 @@ void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 	MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
 }
 
+void attributeChanged(MNodeMessage::AttributeMessage msg, MPlug &plug, MPlug &otherPlug, void*clientData)
+{
+	if (msg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
+	{
+		//plug.isCompound()
+		//MFnTransform(plug.attribute()).getTranslation(MSpace::kWorld, NULL).x;
+		MString values;
+		float x = plug.child(0).asFloat();
+		float y = plug.child(1).asFloat();
+		float z = plug.child(2).asFloat();
+		values += x; values += ", "; values += y; values += ", "; values += z;
+		MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
+	}
+}
+
+void changedNameFunction(MObject &node, const MString &str, void*clientData)
+{
+	MGlobal::displayInfo("name changed, new name: " + MFnDagNode(node).name());
+}
+
 void addedNodeFunction(MObject &node, void*clientData) //look at this function with teachers
 {
 	MGlobal::displayInfo("created: " + MFnTransform(node).name());
@@ -35,13 +55,28 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 				MGlobal::displayInfo(trans.name() + " Successfully added to the MatrixModified Function");
 			}
 		}
+		newId = MNodeMessage::addNameChangedCallback(trans.child(0), changedNameFunction, NULL, &Result);
+		if (Result == MS::kSuccess)
+		{
+			if (myCallbackArray.append(newId) == MS::kSuccess)
+			{
+				MGlobal::displayInfo("Connected the NameChangeFunction");
+			}
+			else
+				MGlobal::displayInfo("failed to connect NameChangeFunction");
+		}
+		if (trans.child(0).hasFn(MFn::kMesh))
+		{
+			newId = MNodeMessage::addAttributeChangedCallback(trans.child(0), attributeChanged, NULL, &Result);
+			if (Result == MS::kSuccess)
+			{
+				if (myCallbackArray.append(newId) == MS::kSuccess)
+					MGlobal::displayInfo("made connection to the attributtes");
+			}
+			else
+				MGlobal::displayInfo("failed to connect attributes");
+		}
 	}
-}
-//attrubute change
-
-void changedNameFunction(MObject &node, const MString &str, void*clientData)
-{
-	MGlobal::displayInfo("name changed, new name: " + MFnDagNode(node).name());
 }
 
 EXPORT MStatus initializePlugin(MObject obj)
@@ -76,7 +111,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			{
 				MGlobal::displayInfo("failed to connect");
 			}
-			/*newId = MNodeMessage::addNameChangedCallback(trans.child(0), changedNameFunction, NULL, &loopResults);
+			newId = MNodeMessage::addNameChangedCallback(trans.child(0), changedNameFunction, NULL, &loopResults);
 			if (loopResults == MS::kSuccess)
 			{
 				if (myCallbackArray.append(newId) == MS::kSuccess)
@@ -85,9 +120,19 @@ EXPORT MStatus initializePlugin(MObject obj)
 				}
 				else
 					MGlobal::displayInfo("failed to connect NameChangeFunction");
-			}*/
+			}
 		}
-		
+		if (trans.child(0).hasFn(MFn::kMesh))
+		{
+			MCallbackId newId = MNodeMessage::addAttributeChangedCallback(trans.child(0), attributeChanged, NULL, &loopResults);
+			if (loopResults == MS::kSuccess)
+			{
+				if (myCallbackArray.append(newId) == MS::kSuccess)
+					MGlobal::displayInfo("made connection to the attributtes");
+			}
+			else
+				MGlobal::displayInfo("failed to connect attributes");
+		}
 
 		/*MDagPath meshDag = MDagPath::getAPathTo(meshIt.currentItem());
 		MCallbackId newId = MDagMessage::addWorldMatrixModifiedCallback(meshDag, WorldMatrixModified, NULL, &loopResults);
@@ -128,7 +173,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 	else
 		MGlobal::displayInfo("failed to create timer");
 
-	newId = MNodeMessage::addNameChangedCallback(MObject::kNullObj, changedNameFunction, NULL, &loopResults);
+	/*newId = MNodeMessage::addNameChangedCallback(MObject::kNullObj, changedNameFunction, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
 		if (myCallbackArray.append(newId) == MS::kSuccess)
@@ -137,7 +182,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 		}
 		else
 			MGlobal::displayInfo("failed to connect NameChangeFunction");
-	}
+	}*/
 
 	/*adding callback for creating node*/
 	newId = MDGMessage::addNodeAddedCallback(addedNodeFunction, kDefaultNodeType, NULL, &loopResults);
