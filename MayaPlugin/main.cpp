@@ -1,8 +1,11 @@
+/*Creator: David Wigelius*/
 #include "maya_includes.h"
 #include <iostream>
+#include "../../shared/shared/CircularBuffer.h" //<-------------------------- fix this later so that it's a lib
 
 using namespace std;
 
+CircularBuffer *producer;
 MCallbackIdArray myCallbackArray;
 float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
 
@@ -15,6 +18,12 @@ void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 {
 	CurrentTime += elapsedTime;
 	MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
+
+	/*if (CurrentTime > 0 && CurrentTime < 9)
+	{
+		producer->push("bajskorven", (size_t)11);
+		MGlobal::displayInfo("TIMKE IS NOW SENDING!");
+	}*/
 }
 
 void attributeChanged(MNodeMessage::AttributeMessage msg, MPlug &plug, MPlug &otherPlug, void*clientData)
@@ -91,6 +100,9 @@ EXPORT MStatus initializePlugin(MObject obj)
 
 	MStatus loopResults = MS::kSuccess;
 
+	/*creating the circular buffer*/
+	producer = new CircularBuffer(L"poop3", 1, true, 256);
+
 	/*adding callback for matrix change in items that already exist*/
 	MItDag meshIt(MItDag::kBreadthFirst, MFn::kTransform, &res);
 	for (; !meshIt.isDone(); meshIt.next())
@@ -132,6 +144,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			}
 			else
 				MGlobal::displayInfo("failed to connect attributes");
+			//producer->push(trans.name().asChar(), trans.name().length());
 		}
 
 		/*MDagPath meshDag = MDagPath::getAPathTo(meshIt.currentItem());
@@ -204,9 +217,13 @@ EXPORT MStatus initializePlugin(MObject obj)
 
 EXPORT MStatus uninitializePlugin(MObject obj)
 {
-	MFnPlugin plugin(obj);
+	/*deleting the producer*/
+	delete producer;
+
 
 	//free resources here
+	MFnPlugin plugin(obj);
+
 	MMessage::removeCallbacks(myCallbackArray);
 
 	MGlobal::displayInfo("Maya plugin unloaded!");
