@@ -11,6 +11,7 @@ struct CreateMesh
 {
 	unsigned int vertexCount;
 	unsigned int indexCount;
+	unsigned int normalCount;
 };
 struct Vertex
 {
@@ -19,4 +20,8 @@ struct Vertex
 struct Index
 {
 	int nr;
+};
+struct Normals
+{
+	float x, y, z;
 };

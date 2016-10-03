@@ -2,7 +2,7 @@
 #include "maya_includes.h"
 #include "structs.h"
 #include <iostream>
-#include "../../shared/shared/CircularBuffer.h" //<-------------------------- fix this later so that it's a lib
+#include "CircularBuffer.h"//<-------------------------- fix this later so that it's a lib
 
 using namespace std;
 
@@ -97,11 +97,13 @@ bool createMesh(MObject &node)
 {
 	
 	MFnMesh mMesh(node, NULL);
-	MIntArray indexList, vertexList;
+	MIntArray indexList, vertexList, normalCount;
 	MFloatPointArray points;
 	MFloatVectorArray normals;
 	mMesh.getPoints(points, MSpace::kObject);
 	mMesh.getTriangles(vertexList, indexList);
+
+	//getRaw
 
 	/*assigning the main header to creation mode*/
 	MainHeader sHeader{ 0 };
@@ -115,7 +117,18 @@ bool createMesh(MObject &node)
 	sMesh.vertexCount = points.length();
 	sMesh.indexCount = indexList.length();
 
+	//mMesh.getVertexNormals(true, normals, MSpace::kObject);
+	//mMesh.getFaceVertexNormals()
+	//mMesh.getNormalIds
+	//const float * punkts = mMesh.getRawPoints(NULL);
+	mMesh.getTriangleOffsets(normalCount, vertexList);
+	//mMesh.getVertices(normalCount, vertexList);
+
+	const float * normz = mMesh.getRawNormals(NULL);
+
 	mMesh.getNormals(normals, MSpace::kObject);
+
+	sMesh.normalCount = normals.length();
 	MString info;
 	for (int i = 0; i < normals.length(); i++)
 	{
@@ -125,6 +138,13 @@ bool createMesh(MObject &node)
 		info += ", ";
 		info += normals[i].z;
 		info += "\n";
+	}
+	MGlobal::displayInfo(info);
+	info = "";
+	for (int i = 0; i < vertexList.length(); i++)
+	{
+		info += vertexList[i];
+		info += "; ";
 	}
 	MGlobal::displayInfo(info);
 	info = "";
@@ -159,49 +179,51 @@ bool createMesh(MObject &node)
 	/*Calculating the length of the message and sending the creation info to the circular buffer*/
 	int length = (sizeof(Vertex) * points.length())
 		+ (sizeof(Index) * indexList.length())
+		+ (sizeof(Normals) * normals.length())
+		+ (sizeof(Index) * vertexList.length())
 		+ sizeof(CreateMesh)
 		+ sizeof(MainHeader)
 		+ sizeof(TypeHeader);
 
 
-	//MString info;
 	/*constructing the message*/
-	//char * pek = msg;
+	char * pek = msg;
 
-	////pek = (char*)&sHeader;
-	//memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
-	//pek += sizeof(MainHeader);
+	memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
 
-	////pek = (char*)&sType;
-	//memcpy(pek, (char*)&sType, sizeof(TypeHeader));
-	//pek += sizeof(TypeHeader);
+	memcpy(pek, (char*)&sType, sizeof(TypeHeader));
+	pek += sizeof(TypeHeader);
 
-	//////pek = (char*)&sMesh;
-	//memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
-	//pek += sizeof(CreateMesh);
+	memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
+	pek += sizeof(CreateMesh);
 
-	//////pek = (char*)&mVertex;
-	//memcpy(pek, (char*)&points[0], (sizeof(Vertex)*sMesh.vertexCount));
-	//pek += sizeof(Vertex)*sMesh.vertexCount;
+	memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
+	pek += sizeof(Vertex)*sMesh.vertexCount;
 
-	//memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
-	////pek = (char*)&mIndex;
+	memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
+	pek += sizeof(Index)*sMesh.indexCount;
 
-	//while (true)
-	//{
-	//	try
-	//	{
-	//		if (producer->push(msg, length))
-	//		{
-	//			MGlobal::displayInfo("Sent the mesh to the circular buffer");
-	//			break;
-	//		}
-	//	}
-	//	catch (...)
-	//	{
-	//		Sleep(1);
-	//	}
-	//}
+	memcpy(pek, (char*)normz, (sizeof(Normals)*sMesh.normalCount));
+	pek += sizeof(Normals)*sMesh.normalCount;
+
+	memcpy(pek, (char*)&vertexList[0], (sizeof(Index)*sMesh.indexCount));
+
+	while (true)
+	{
+		try
+		{
+			if (producer->push(msg, length))
+			{
+				MGlobal::displayInfo("Sent the mesh to the circular buffer");
+				break;
+			}
+		}
+		catch (...)
+		{
+			Sleep(1);
+		}
+	}
 
 	/*deleting the allocated variables*/
 	//delete[] mVertex;
