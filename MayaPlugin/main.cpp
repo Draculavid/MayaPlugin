@@ -1,5 +1,6 @@
 /*Creator: David Wigelius*/
 #include "maya_includes.h"
+#include "structs.h"
 #include <iostream>
 #include "../../shared/shared/CircularBuffer.h" //<-------------------------- fix this later so that it's a lib
 
@@ -8,6 +9,8 @@ using namespace std;
 CircularBuffer *producer;
 MCallbackIdArray myCallbackArray;
 float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
+char * msg;
+
 #pragma region callbacks
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
@@ -96,40 +99,50 @@ bool createMesh(MObject &node)
 	MFnMesh mMesh(node, NULL);
 	MIntArray indexList, vertexList;
 	MFloatPointArray points;
+	MFloatVectorArray normals;
 	mMesh.getPoints(points, MSpace::kObject);
 	mMesh.getTriangles(vertexList, indexList);
-	/*assigning the main header to creation mode*/
-	CircularBuffer::MainHeader sHeader{ 0 };
 
-	//mMesh.getPoints()
+	/*assigning the main header to creation mode*/
+	MainHeader sHeader{ 0 };
+
 	/*Assigning the type to mesh*/
-	CircularBuffer::TypeHeader sType{ 0 };
+	TypeHeader sType{ 5 };
 
 	/*Creating the headers to send*/
-	CircularBuffer::CreateMesh sMesh;
+	CreateMesh sMesh;
 
 	sMesh.vertexCount = points.length();
-	sMesh.topologyCount = indexList.length();
+	sMesh.indexCount = indexList.length();
 
-	CircularBuffer::Vertex *mVertex = new CircularBuffer::Vertex[points.length()];
-	CircularBuffer::topology *mTopology = new CircularBuffer::topology[indexList.length()];
+	mMesh.getNormals(normals, MSpace::kObject);
+	MString info;
+	for (int i = 0; i < normals.length(); i++)
+	{
+		info += normals[i].x;
+		info += ", ";
+		info += normals[i].y;
+		info += ", ";
+		info += normals[i].z;
+		info += "\n";
+	}
+	MGlobal::displayInfo(info);
+	info = "";
+	//Vertex *mVertex = new Vertex[points.length()];
+	//Index *mIndex = new Index[indexList.length()];
 
 	/*putting references to the points (vertex points)*/
-	MString bajs;
 	for (int i = 0; i < points.length(); i++)
 	{
-		mVertex[i].x = points[i].x;
-		mVertex[i].y = points[i].y;
-		mVertex[i].z = points[i].z;
-		bajs += mVertex[i].x;
-		bajs += ", ";
-		bajs += mVertex[i].y;
-		bajs += ", ";
-		bajs += mVertex[i].z;
-		bajs += "\n";
+		info += points[i].x;
+		info += ", ";
+		info += points[i].y;
+		info += ", ";
+		info += points[i].z;
+		info += "\n";
 	}
-	MGlobal::displayInfo(bajs);
-
+	MGlobal::displayInfo(info);
+	info = "";
 	/*mVertex->x = points[0].x;
 	mVertex->y = points[0].y;
 	mVertex->z = points[0].z;*/
@@ -137,132 +150,62 @@ bool createMesh(MObject &node)
 	/*putting reference to the indexes of the triangles*/
 	for (int i = 0; i < indexList.length(); i++)
 	{
-		mTopology[i].nr = indexList[i];
-	}
-
-	/*Calculating the length of the message and sending the creation info to the circular buffer*/
-	int length = (sizeof(CircularBuffer::Vertex) * points.length())
-		+ (sizeof(CircularBuffer::topology) * indexList.length())
-		+ sizeof(CircularBuffer::CreateMesh)
-		+ sizeof(CircularBuffer::MainHeader)
-		+ sizeof(CircularBuffer::TypeHeader);
-
-	MString info;
-	info += length;
-	MGlobal::displayInfo(info);
-
-	/*while (true)
-	{
-		try
-		{
-			if (producer->pushMesh(sMesh, *mVertex, *mTopology, length))
-			{
-				MGlobal::displayInfo("Sent the mesh to the circular buffer");
-				break;
-			}
-		}
-		catch (...)
-		{
-			Sleep(1);
-		}
-	}*/
-
-	/*deleting the allocated variables*/
-	delete mVertex;
-	delete mTopology;
-
-	//mTopology = new CircularBuffer::topology[mMesh.topologyCount];
-	/*Iterating over all attributes of the mesh*/
-	//MItMeshPolygon polyIt(node, NULL);
-	//int bajs = polyIt.count(); //number of faces
-	//polyIt.polygonVertexCount();
-	//kukirov += bajs;
-		//MGlobal::displayInfo(kukirov);
-	//MString info;
-
-
-	//ballefjong.getVertices(vertexCount, vertexList);
-
-	/*To get the vertex points of the mesh*/
-	//info += points.length();
-	//MGlobal::displayInfo(info);
-	//info = "";
-
-	//info += ballefjong.numPolygons(NULL);
-	//MGlobal::displayInfo(info);
-	//info = "";
-
-	/*info += ballefjong.numFaceVertices();
-	MGlobal::displayInfo(info);
-	info = "";*/
-
-	//MGlobal::displayInfo(info);
-	//info = "";
-
-	//topology[ballefjong.numPolygons(NULL) *polyIt.numTriangles(bajs)]
-	/*MGlobal::displayInfo("vertex count: ");
-	for (int i = 0; i < vertexCount.length(); i++)
-	{
-		info += vertexCount[i];
+		info += indexList[i];
 		info += "; ";
 	}
-
 	MGlobal::displayInfo(info);
 	info = "";
 
-	MGlobal::displayInfo("vertex count: ");
-	for (int i = 0; i < vertexList.length(); i++)
-	{
-		info += vertexList[i];
-		info += "; ";
-	}
+	/*Calculating the length of the message and sending the creation info to the circular buffer*/
+	int length = (sizeof(Vertex) * points.length())
+		+ (sizeof(Index) * indexList.length())
+		+ sizeof(CreateMesh)
+		+ sizeof(MainHeader)
+		+ sizeof(TypeHeader);
 
-	MGlobal::displayInfo(info);
-	info = "";*/
 
-	//polyIt.numTriangles(bajs);
-	//info += bajs;
+	//MString info;
+	/*constructing the message*/
+	//char * pek = msg;
 
-	//MGlobal::displayInfo(info);
+	////pek = (char*)&sHeader;
+	//memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
+	//pek += sizeof(MainHeader);
 
-	/*loops to get the points of the current face*/
-	/*for (unsigned int i = 0; i < fitta.length(); i++)
-	{
-		kukirov += fitta[i].x;
-		kukirov += ", ";
-		kukirov += fitta[i].y;
-		kukirov += ", ";
-		kukirov += fitta[i].z;
-		kukirov += "; ";
-	}
-	MGlobal::displayInfo(kukirov);
-	kukirov = "";*/
+	////pek = (char*)&sType;
+	//memcpy(pek, (char*)&sType, sizeof(TypeHeader));
+	//pek += sizeof(TypeHeader);
 
-	/*for topology*/
-	/*for (; !polyIt.isDone(); polyIt.next())
-	{
-		polyIt.getTriangles(points, indexList, MSpace::kWorld);
-		for (int i = 0; i < indexList.length(); i++)
-		{
-			info += indexList[i];
-			info += "; ";
-		}
-		MGlobal::displayInfo(info);
-		info = "";
-	}*/
-	////for (; !polyIt.isDone(); polyIt.next())
+	//////pek = (char*)&sMesh;
+	//memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
+	//pek += sizeof(CreateMesh);
+
+	//////pek = (char*)&mVertex;
+	//memcpy(pek, (char*)&points[0], (sizeof(Vertex)*sMesh.vertexCount));
+	//pek += sizeof(Vertex)*sMesh.vertexCount;
+
+	//memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
+	////pek = (char*)&mIndex;
+
+	//while (true)
 	//{
-	//	polyIt.getVertices(balle);
-	//	for (int i = 0; i < balle.length(); i++)
+	//	try
 	//	{
-	//		kukirov += balle[i];
+	//		if (producer->push(msg, length))
+	//		{
+	//			MGlobal::displayInfo("Sent the mesh to the circular buffer");
+	//			break;
+	//		}
 	//	}
-
-	//	
-	//	//kukirov += bajs;
-
-	//	kukirov = "";
+	//	catch (...)
+	//	{
+	//		Sleep(1);
+	//	}
 	//}
+
+	/*deleting the allocated variables*/
+	//delete[] mVertex;
+	//delete[] mIndex;
 	return true;
 }
 #pragma endregion
@@ -282,6 +225,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 
 	/*creating the circular buffer*/
 	producer = new CircularBuffer(L"poop3", 10, true, 256);
+	msg = new char[(10 * 1 << 10)/4];
 
 	/*adding callback for matrix change in items that already exist*/
 	MItDag meshIt(MItDag::kBreadthFirst, MFn::kTransform, &res);
@@ -405,6 +349,7 @@ EXPORT MStatus uninitializePlugin(MObject obj)
 	/*deleting the producer*/
 	delete producer;
 
+	delete msg;
 
 	//free resources here
 	MFnPlugin plugin(obj);

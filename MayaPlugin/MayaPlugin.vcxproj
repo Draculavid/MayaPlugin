@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\shared\shared\CircularBuffer.h" />
     <ClInclude Include="maya_includes.h" />
+    <ClInclude Include="structs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
