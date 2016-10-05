@@ -132,18 +132,22 @@ bool createMesh(MObject &node)
 	mMesh.getUVSetNames(bajs);
 	//const MString * kiss = bajs[0];
 	MStatus hejsan = mMesh.getUVs(u, v);
-	double * kukuk = new double[u.length()];
-	u.get(kukuk);
+	//double * kukuk = new double[u.length()];
+	//u.get(kukuk);
 	//mMesh.getUVs(u, v);
 	mMesh.getAssignedUVs(uvCount, uvIds);
+	sMesh.uvIndexCount = uvIds.length();
+
+	sMesh.uvCount = u.length();
+
 	MString info;
-	for (int i = 0; i < u.length(); i++)
+	/*for (int i = 0; i < u.length(); i++)
 	{
-		info += kukuk[i];
+		info += u[i];
 		info += ", ";
-		//info += v[i];
-		//info = "\n";
-	}
+		info += v[i];
+		info = "\n";
+	}*/
 	MGlobal::displayInfo(info);
 
 	sMesh.normalCount = normals.length();
@@ -203,6 +207,8 @@ bool createMesh(MObject &node)
 		+ sizeof(MainHeader)
 		+ sizeof(TypeHeader)
 		+ sizeof(Matrix)
+		+ (sizeof(float) * u.length())*2
+		+ (sizeof(Index)*sMesh.uvIndexCount)
 		+ sMesh.nameLength;
 
 	
@@ -232,6 +238,15 @@ bool createMesh(MObject &node)
 
 	memcpy(pek, (char*)&vertexList[0], (sizeof(Index)*sMesh.indexCount));
 	pek += sizeof(Index)*sMesh.indexCount;
+
+	memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
+	pek += sizeof(float)*u.length();
+
+	memcpy(pek, (char*)&v[0], sizeof(float)*v.length());
+	pek += sizeof(float)*u.length();
+
+	memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
+	pek += sizeof(Index)*sMesh.uvIndexCount;
 
 	memcpy(pek, transform.name().asChar(), sMesh.nameLength);
 
