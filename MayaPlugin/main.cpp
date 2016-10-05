@@ -96,26 +96,28 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 bool createMesh(MObject &node)
 {
 	
-	MFnMesh mMesh(node, NULL);
-	MIntArray indexList, vertexList, normalCount;
+	MFnTransform transform = node;
+	MFnMesh mMesh(((MFnTransform)(node)).child(0), NULL);
+	MIntArray indexList, vertexList, normalCount, uvCount, uvIds;
 	MFloatPointArray points;
+	MFloatArray u, v;
 	MFloatVectorArray normals;
 	mMesh.getPoints(points, MSpace::kObject);
 	mMesh.getTriangles(vertexList, indexList);
 
 	//getRaw
-
+	MStringArray bajs;
 	/*assigning the main header to creation mode*/
 	MainHeader sHeader{ 0 };
 
 	/*Assigning the type to mesh*/
-	TypeHeader sType{ 5 };
+	TypeHeader sType{ 0 };
 
 	/*Creating the headers to send*/
 	CreateMesh sMesh;
-
 	sMesh.vertexCount = points.length();
 	sMesh.indexCount = indexList.length();
+	sMesh.nameLength = transform.name().length();
 
 	//mMesh.getVertexNormals(true, normals, MSpace::kObject);
 	//mMesh.getFaceVertexNormals()
@@ -125,12 +127,28 @@ bool createMesh(MObject &node)
 	//mMesh.getVertices(normalCount, vertexList);
 
 	const float * normz = mMesh.getRawNormals(NULL);
-
 	mMesh.getNormals(normals, MSpace::kObject);
 
-	sMesh.normalCount = normals.length();
+	mMesh.getUVSetNames(bajs);
+	//const MString * kiss = bajs[0];
+	MStatus hejsan = mMesh.getUVs(u, v);
+	double * kukuk = new double[u.length()];
+	u.get(kukuk);
+	//mMesh.getUVs(u, v);
+	mMesh.getAssignedUVs(uvCount, uvIds);
 	MString info;
-	for (int i = 0; i < normals.length(); i++)
+	for (int i = 0; i < u.length(); i++)
+	{
+		info += kukuk[i];
+		info += ", ";
+		//info += v[i];
+		//info = "\n";
+	}
+	MGlobal::displayInfo(info);
+
+	sMesh.normalCount = normals.length();
+
+	/*for (int i = 0; i < normals.length(); i++)
 	{
 		info += normals[i].x;
 		info += ", ";
@@ -147,12 +165,12 @@ bool createMesh(MObject &node)
 		info += "; ";
 	}
 	MGlobal::displayInfo(info);
-	info = "";
+	info = "";*/
 	//Vertex *mVertex = new Vertex[points.length()];
 	//Index *mIndex = new Index[indexList.length()];
 
 	/*putting references to the points (vertex points)*/
-	for (int i = 0; i < points.length(); i++)
+	/*for (int i = 0; i < points.length(); i++)
 	{
 		info += points[i].x;
 		info += ", ";
@@ -162,20 +180,20 @@ bool createMesh(MObject &node)
 		info += "\n";
 	}
 	MGlobal::displayInfo(info);
-	info = "";
+	info = "";*/
 	/*mVertex->x = points[0].x;
 	mVertex->y = points[0].y;
 	mVertex->z = points[0].z;*/
 
 	/*putting reference to the indexes of the triangles*/
-	for (int i = 0; i < indexList.length(); i++)
+	/*for (int i = 0; i < indexList.length(); i++)
 	{
 		info += indexList[i];
 		info += "; ";
 	}
 	MGlobal::displayInfo(info);
 	info = "";
-
+*/
 	/*Calculating the length of the message and sending the creation info to the circular buffer*/
 	int length = (sizeof(Vertex) * points.length())
 		+ (sizeof(Index) * indexList.length())
@@ -183,9 +201,11 @@ bool createMesh(MObject &node)
 		+ (sizeof(Index) * vertexList.length())
 		+ sizeof(CreateMesh)
 		+ sizeof(MainHeader)
-		+ sizeof(TypeHeader);
+		+ sizeof(TypeHeader)
+		+ sizeof(Matrix)
+		+ sMesh.nameLength;
 
-
+	
 	/*constructing the message*/
 	char * pek = msg;
 
@@ -198,6 +218,9 @@ bool createMesh(MObject &node)
 	memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
 	pek += sizeof(CreateMesh);
 
+	memcpy(pek, (char*)&transform.transformationMatrix(), sizeof(Matrix));
+	pek += sizeof(Matrix);
+
 	memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
 	pek += sizeof(Vertex)*sMesh.vertexCount;
 
@@ -208,6 +231,9 @@ bool createMesh(MObject &node)
 	pek += sizeof(Normals)*sMesh.normalCount;
 
 	memcpy(pek, (char*)&vertexList[0], (sizeof(Index)*sMesh.indexCount));
+	pek += sizeof(Index)*sMesh.indexCount;
+
+	memcpy(pek, transform.name().asChar(), sMesh.nameLength);
 
 	while (true)
 	{
@@ -293,7 +319,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			}
 			else
 				MGlobal::displayInfo("failed to connect attributes");
-			createMesh(trans.child(0));
+			createMesh(meshIt.currentItem());
 			//MItMeshPolygon( const MObject & polyObject, MStatus * ReturnStatus = NULL );
 			//producer->push(trans.name().asChar(), trans.name().length());
 		}
