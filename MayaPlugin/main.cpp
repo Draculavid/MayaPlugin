@@ -18,7 +18,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 	MGlobal::displayInfo(trans.name() + " worldmatrix changed");
 	MainHeader mHead{ 4 };
-	Transformation mTransform{ trans.name().length() , 4 };
+	Transformation mTransform{ trans.name().length() , 3 };
 
 	/*this will vary*/
 	size_t length =
@@ -50,7 +50,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 	memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 	pek += sizeof(Transformation);
 
-	memcpy(pek, (char*)&trans.name(), mTransform.nameLength);
+	memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 	pek += mTransform.nameLength;
 
 	memcpy(pek, (char*)&sScale, sizeof(Vector));
