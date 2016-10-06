@@ -275,6 +275,9 @@ bool createCamera(MObject &node)
 	memcpy(pek, &mHead, sizeof(MainHeader));
 	pek += sizeof(MainHeader);
 
+	MFloatMatrix bajs = MFnTransform(node).transformation();
+	//MTransformationMatrix
+
 	memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
 	pek += sizeof(Matrix);
 	
