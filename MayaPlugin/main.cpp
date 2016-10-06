@@ -125,8 +125,8 @@ bool createMesh(MObject &node)
 	Vector4 sRot;
 	double tempScale[3], tempRot[4];
 
-	sTran = transform.getTranslation(MSpace::kObject, NULL);
-	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kObject);
+	sTran = transform.getTranslation(MSpace::kTransform, NULL);
+	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
 	sRot.x = (float)tempRot[0];
 	sRot.y = (float)tempRot[1];
 	sRot.z = (float)tempRot[2];
@@ -411,7 +411,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			}
 			else
 				MGlobal::displayInfo("failed to connect attributes");
-			//createMesh(meshIt.currentItem());
+			createMesh(meshIt.currentItem());
 			//MItMeshPolygon( const MObject & polyObject, MStatus * ReturnStatus = NULL );
 			//producer->push(trans.name().asChar(), trans.name().length());
 		}
