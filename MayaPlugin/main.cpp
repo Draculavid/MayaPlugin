@@ -108,9 +108,6 @@ bool createMesh(MObject &node)
 	/*assigning the main header to creation mode*/
 	MainHeader sHeader{ 0 };
 
-	/*Assigning the type to mesh*/
-	TypeHeader sType{ 0 };
-
 	/*Creating the headers to send*/
 	CreateMesh sMesh;
 	sMesh.vertexCount = points.length();
@@ -201,7 +198,6 @@ bool createMesh(MObject &node)
 		+ (sizeof(Index) * vertexList.length())
 		+ sizeof(CreateMesh)
 		+ sizeof(MainHeader)
-		+ sizeof(TypeHeader)
 		+ sizeof(Matrix)
 		+ (sizeof(float) * u.length())*2
 		+ (sizeof(Index)*sMesh.uvIndexCount)
@@ -213,9 +209,6 @@ bool createMesh(MObject &node)
 
 	memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
 	pek += sizeof(MainHeader);
-
-	memcpy(pek, (char*)&sType, sizeof(TypeHeader));
-	pek += sizeof(TypeHeader);
 
 	memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
 	pek += sizeof(CreateMesh);

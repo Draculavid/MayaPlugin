@@ -3,10 +3,6 @@ struct MainHeader
 {
 	unsigned int type;
 };
-struct TypeHeader
-{
-	unsigned int type;
-};
 struct CreateMesh
 {
 	unsigned int vertexCount;
