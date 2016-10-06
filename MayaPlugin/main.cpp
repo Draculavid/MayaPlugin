@@ -14,7 +14,72 @@ char * msg;
 #pragma region callbacks
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
-	MGlobal::displayInfo(MFnTransform(transformNode).name() + " worldmatrix changed");
+	MFnTransform trans = transformNode;
+
+	MGlobal::displayInfo(trans.name() + " worldmatrix changed");
+	MainHeader mHead{ 4 };
+	Transformation mTransform{ trans.name().length() , 4 };
+
+	/*this will vary*/
+	size_t length =
+		sizeof(MainHeader)
+		+ sizeof(Transformation)
+		+ mTransform.nameLength
+		+ sizeof(Vector)*2
+		+ sizeof(Vector4);
+
+	/*this will also vary*/
+	Vector sTrans, sScale; double tempScale[3];
+	Vector4 sRot; double tempRot[4];
+
+	trans.getScale(tempScale);
+	sScale = tempScale;
+
+	trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+	sRot.x = tempRot[0];
+	sRot.y = tempRot[1];
+	sRot.z = tempRot[2];
+	sRot.w = tempRot[3];
+
+	sTrans = trans.getTranslation(MSpace::kTransform, NULL);
+
+	char * pek = msg;
+	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
+
+	memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+	pek += sizeof(Transformation);
+
+	memcpy(pek, (char*)&trans.name(), mTransform.nameLength);
+	pek += mTransform.nameLength;
+
+	memcpy(pek, (char*)&sScale, sizeof(Vector));
+	pek += sizeof(Vector);
+
+	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+	pek += sizeof(Vector4);
+
+	memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+	while (true)
+	{
+		try
+		{
+			if (producer->push(msg, length))
+			{
+				break;
+			}
+		}
+		catch (...)
+		{
+			Sleep(1);
+		}
+	}
+
+	/*
+	kScale         = kScaleX        | kScaleY        | kScaleZ,
+	kRotation      = kRotateX       | kRotateY       | kRotateZ,
+    kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
 }
 
 void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
