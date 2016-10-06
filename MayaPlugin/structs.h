@@ -15,6 +15,10 @@ struct CreateMesh
 	unsigned int uvCount;
 	unsigned int uvIndexCount;
 };
+struct CreateCamera
+{
+	unsigned int nameLength;
+};
 struct Vertex
 {
 	float x, y, z;
@@ -35,7 +39,21 @@ struct floatMatrix
 {
 	float m[16];
 };
-
+struct Vector
+{
+	float x, y, z;
+	Vector& operator=(const MVector& other)
+	{
+		x = (float)other.x;
+		y = (float)other.y;
+		z = (float)other.z;
+		return *this;
+	}
+};
+struct Vector4
+{
+	float x, y, z, w;
+};
 /*
 enum MsgType
 {

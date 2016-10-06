@@ -113,18 +113,33 @@ bool createMesh(MObject &node)
 	sMesh.vertexCount = points.length();
 	sMesh.indexCount = indexList.length();
 	sMesh.nameLength = transform.name().length();
+	mMesh.getTriangleOffsets(normalCount, vertexList);
 
 	//mMesh.getVertexNormals(true, normals, MSpace::kObject);
 	//mMesh.getFaceVertexNormals()
 	//mMesh.getNormalIds
 	//const float * punkts = mMesh.getRawPoints(NULL);
-	mMesh.getTriangleOffsets(normalCount, vertexList);
 	//mMesh.getVertices(normalCount, vertexList);
+	//MVector kiss;
+	Vector sTran, sScal;
+	Vector4 sRot;
+	double tempScale[3], tempRot[4];
+
+	sTran = transform.getTranslation(MSpace::kObject, NULL);
+	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kObject);
+	sRot.x = (float)tempRot[0];
+	sRot.y = (float)tempRot[1];
+	sRot.z = (float)tempRot[2];
+	sRot.w = (float)tempRot[3];
+
+	//sRot = tempRot;
+	transform.getScale(tempScale);
+	sScal = tempScale;
 
 	const float * normz = mMesh.getRawNormals(NULL);
 	mMesh.getNormals(normals, MSpace::kObject);
 
-	MStatus hejsan = mMesh.getUVs(u, v);
+	mMesh.getUVs(u, v);
 	//double * kukuk = new double[u.length()];
 	//u.get(kukuk);
 	//mMesh.getUVs(u, v);
@@ -198,7 +213,9 @@ bool createMesh(MObject &node)
 		+ (sizeof(Index) * vertexList.length())
 		+ sizeof(CreateMesh)
 		+ sizeof(MainHeader)
-		+ sizeof(Matrix)
+		+ sizeof(Vector)*2
+		+ sizeof(Vector4)
+		//+ sizeof(Matrix)
 		+ (sizeof(float) * u.length())*2
 		+ (sizeof(Index)*sMesh.uvIndexCount)
 		+ sMesh.nameLength;
@@ -213,8 +230,19 @@ bool createMesh(MObject &node)
 	memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
 	pek += sizeof(CreateMesh);
 
-	memcpy(pek, (char*)&transform.transformationMatrix(), sizeof(Matrix));
-	pek += sizeof(Matrix);
+	memcpy(pek, transform.name().asChar(), sMesh.nameLength); //check this
+	pek += sMesh.nameLength;
+
+	memcpy(pek, (char*)&sScal, sizeof(Vector));
+	pek += sizeof(Vector);
+
+	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+	pek += sizeof(Vector4);
+
+	memcpy(pek, (char*)&sTran, sizeof(Vector));
+	pek += sizeof(Vector);
+	//memcpy(pek, (char*)&transform.transformationMatrix(), sizeof(Matrix));
+	//pek += sizeof(Matrix);
 
 	memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
 	pek += sizeof(Vertex)*sMesh.vertexCount;
@@ -235,9 +263,7 @@ bool createMesh(MObject &node)
 	pek += sizeof(float)*u.length();
 
 	memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
-	pek += sizeof(Index)*sMesh.uvIndexCount;
 
-	memcpy(pek, transform.name().asChar(), sMesh.nameLength);
 
 	while (true)
 	{
@@ -263,11 +289,25 @@ bool createMesh(MObject &node)
 bool createCamera(MObject &node)
 {
 	MFnCamera sCamera = MFnTransform(node).child(0);
-	
+	MFnTransform transform = node;
+	CreateCamera mCam{ transform.name().length() };
+
+	Vector sTrans;
+	sTrans = transform.getTranslation(MSpace::kTransform);
+	double tempRot[4]; Vector4 sRot;
+	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+	sRot.x = tempRot[0];
+	sRot.y = tempRot[1];
+	sRot.z = tempRot[2];
+	sRot.w = tempRot[3];
+
 	size_t length =
-		sizeof(Matrix)
+		sizeof(CreateCamera)
 		+ sizeof(floatMatrix)
-		+ sizeof(MainHeader);
+		+ sizeof(MainHeader)
+		+ sizeof(Vector4)
+		+ sizeof(Vector)
+		+ mCam.nameLength;
 	char * pek = msg;
 
 	MainHeader mHead{ 1 };
@@ -275,13 +315,22 @@ bool createCamera(MObject &node)
 	memcpy(pek, &mHead, sizeof(MainHeader));
 	pek += sizeof(MainHeader);
 
-	MFloatMatrix bajs = MFnTransform(node).transformation();
-	//MTransformationMatrix
+	memcpy(pek, &mCam, sizeof(CreateCamera));
+	pek += sizeof(CreateCamera);
 
-	memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
-	pek += sizeof(Matrix);
+	memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
+	pek += mCam.nameLength;
+
+	/*memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
+	pek += sizeof(Matrix);*/
 	
 	memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
+	pek += sizeof(floatMatrix);
+
+	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+	pek += sizeof(Vector4);
+
+	memcpy(pek, (char*)&sTrans, sizeof(Vector));
 
 	while (true)
 	{
@@ -362,7 +411,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			}
 			else
 				MGlobal::displayInfo("failed to connect attributes");
-			createMesh(meshIt.currentItem());
+			//createMesh(meshIt.currentItem());
 			//MItMeshPolygon( const MObject & polyObject, MStatus * ReturnStatus = NULL );
 			//producer->push(trans.name().asChar(), trans.name().length());
 		}
