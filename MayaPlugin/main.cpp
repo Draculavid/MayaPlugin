@@ -105,8 +105,6 @@ bool createMesh(MObject &node)
 	mMesh.getPoints(points, MSpace::kObject);
 	mMesh.getTriangles(vertexList, indexList);
 
-	//getRaw
-	MStringArray bajs;
 	/*assigning the main header to creation mode*/
 	MainHeader sHeader{ 0 };
 
@@ -129,8 +127,6 @@ bool createMesh(MObject &node)
 	const float * normz = mMesh.getRawNormals(NULL);
 	mMesh.getNormals(normals, MSpace::kObject);
 
-	mMesh.getUVSetNames(bajs);
-	//const MString * kiss = bajs[0];
 	MStatus hejsan = mMesh.getUVs(u, v);
 	//double * kukuk = new double[u.length()];
 	//u.get(kukuk);
@@ -271,6 +267,42 @@ bool createMesh(MObject &node)
 	//delete[] mIndex;
 	return true;
 }
+bool createCamera(MObject &node)
+{
+	MFnCamera sCamera = MFnTransform(node).child(0);
+	
+	size_t length =
+		sizeof(Matrix)
+		+ sizeof(floatMatrix)
+		+ sizeof(MainHeader);
+	char * pek = msg;
+
+	MainHeader mHead{ 1 };
+
+	memcpy(pek, &mHead, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
+
+	memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
+	pek += sizeof(Matrix);
+	
+	memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
+
+	while (true)
+	{
+		try
+		{
+			if (producer->push(msg, length))
+			{
+				break;
+			}
+		}
+		catch (...)
+		{
+			Sleep(1);
+		}
+	}
+	return true;
+}
 #pragma endregion
 #pragma region Modified
 #pragma endregion
@@ -337,6 +369,13 @@ EXPORT MStatus initializePlugin(MObject obj)
 			createMesh(meshIt.currentItem());
 			//MItMeshPolygon( const MObject & polyObject, MStatus * ReturnStatus = NULL );
 			//producer->push(trans.name().asChar(), trans.name().length());
+		}
+		if (trans.child(0).hasFn(MFn::kCamera))
+		{
+			if (MFnTransform(meshIt.currentItem()).name() == "persp")
+			{
+				createCamera(meshIt.currentItem());
+			}
 		}
 
 		/*MDagPath meshDag = MDagPath::getAPathTo(meshIt.currentItem());
