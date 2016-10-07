@@ -9,73 +9,85 @@ using namespace std;
 CircularBuffer *producer;
 MCallbackIdArray myCallbackArray;
 float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
+float modifiedTime = 0;
+//float DeltaTime = 0;
 char * msg;
 
 #pragma region callbacks
+float getUpdateTime() { return 0.05; }
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
-	MFnTransform trans = transformNode;
-
-	MGlobal::displayInfo(trans.name() + " worldmatrix changed");
-	MainHeader mHead{ 4 };
-	Transformation mTransform{ trans.name().length() , 3 };
-
-	/*this will vary*/
-	size_t length =
-		sizeof(MainHeader)
-		+ sizeof(Transformation)
-		+ mTransform.nameLength
-		+ sizeof(Vector)*2
-		+ sizeof(Vector4);
-
-	/*this will also vary*/
-	Vector sTrans, sScale; double tempScale[3];
-	Vector4 sRot; double tempRot[4];
-
-	trans.getScale(tempScale);
-	sScale = tempScale;
-
-	trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-	sRot.x = tempRot[0];
-	sRot.y = tempRot[1];
-	sRot.z = tempRot[2];
-	sRot.w = tempRot[3];
-
-	sTrans = trans.getTranslation(MSpace::kTransform, NULL);
-
-	char * pek = msg;
-	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-	pek += sizeof(MainHeader);
-
-	memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-	pek += sizeof(Transformation);
-
-	memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-	pek += mTransform.nameLength;
-
-	memcpy(pek, (char*)&sScale, sizeof(Vector));
-	pek += sizeof(Vector);
-
-	memcpy(pek, (char*)&sRot, sizeof(Vector4));
-	pek += sizeof(Vector4);
-
-	memcpy(pek, (char*)&sTrans, sizeof(Vector));
-
-	while (true)
+	//asyncronous callback thread here to the elapsed time funtion, so that it will be called always to update
+	//the current time at all times. MThreadAsync.
+	//if (modifiedTime > getUpdateTime())
 	{
-		try
+		//if (modified & MDagMessage::kTranslation)
 		{
-			if (producer->push(msg, length))
+			MFnTransform trans = transformNode;
+
+			MGlobal::displayInfo(trans.name() + " worldmatrix changed");
+			MainHeader mHead{ 4 };
+			Transformation mTransform{ trans.name().length() , 3 };
+
+			/*this will vary*/
+			size_t length =
+				sizeof(MainHeader)
+				+ sizeof(Transformation)
+				+ mTransform.nameLength
+				+ sizeof(Vector) * 2
+				+ sizeof(Vector4);
+
+			/*this will also vary*/
+			Vector sTrans, sScale; double tempScale[3];
+			Vector4 sRot; double tempRot[4];
+
+			trans.getScale(tempScale);
+			sScale = tempScale;
+
+			trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+			sRot.x = tempRot[0];
+			sRot.y = tempRot[1];
+			sRot.z = tempRot[2];
+			sRot.w = tempRot[3];
+
+			sTrans = trans.getTranslation(MSpace::kTransform, NULL);
+
+			char * pek = msg;
+			memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+			pek += sizeof(MainHeader);
+
+			memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+			pek += sizeof(Transformation);
+
+			memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+			pek += mTransform.nameLength;
+
+			memcpy(pek, (char*)&sScale, sizeof(Vector));
+			pek += sizeof(Vector);
+
+			memcpy(pek, (char*)&sRot, sizeof(Vector4));
+			pek += sizeof(Vector4);
+
+			memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+			modifiedTime = 0;
+
+			//while (true)
 			{
-				break;
+				//try
+				{
+					if (producer->push(msg, length))
+					{
+						//break;
+					}
+				}
+				//catch (...)
+				{
+					//Sleep(1);
+				}
 			}
 		}
-		catch (...)
-		{
-			Sleep(1);
-		}
 	}
-
 	/*
 	kScale         = kScaleX        | kScaleY        | kScaleZ,
 	kRotation      = kRotateX       | kRotateY       | kRotateZ,
@@ -84,7 +96,9 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 {
-	CurrentTime += elapsedTime;
+	//DeltaTime = elapsedTime - lastTime;
+	modifiedTime += elapsedTime;
+	CurrentTime = elapsedTime;
 	MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
 
 	/*if (CurrentTime > 0 && CurrentTime < 9)
@@ -516,7 +530,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 		} */
 	}
 	/*adding callback for time*/
-	MCallbackId newId = MTimerMessage::addTimerCallback(5, elapsedTimeFunction, NULL, &loopResults);
+	MCallbackId newId = MTimerMessage::addTimerCallback(0.05, elapsedTimeFunction, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
 		if (myCallbackArray.append(newId) == MS::kSuccess);

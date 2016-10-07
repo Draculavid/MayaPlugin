@@ -29,6 +29,7 @@
 #include <maya/MSelectionList.h>
 #include <maya/MItDependencyNodes.h>
 #include <maya/MFloatMatrix.h>
+#include <maya/MTimer.h>
 
 // Wrappers
 #include <maya/MGlobal.h>
