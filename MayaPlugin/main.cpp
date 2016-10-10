@@ -17,12 +17,76 @@ char * msg;
 float getUpdateTime() { return 0.05; }
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
-	//asyncronous callback thread here to the elapsed time funtion, so that it will be called always to update
-	//the current time at all times. MThreadAsync.
-	if (modifiedTime > getUpdateTime())
+	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
 	{
+		M3dView mCam;
+		mCam.active3dView();
+		mCam.updateViewingParameters();
+
+		MStatus rs;
+		MDagPath camPath;
+		rs = mCam.getCamera(camPath);
+		MFnCamera sCamera(camPath);
+		MFnTransform transform = sCamera.parent(0);
+
+		MGlobal::displayInfo(transform.name() + " worldmatrix changed");
+		MainHeader mHead{ 4 };
+		Transformation mTransform{ transform.name().length() , 3 };
+
+
+
+		size_t length =
+			sizeof(MainHeader)
+			+ sizeof(Transformation)
+			+ transform.name().length()
+			+ sizeof(Vector) * 2
+			+ sizeof(Vector4);
+
+		/*this will also vary*/
+		Vector sTrans, sScale; double tempScale[3];
+		Vector4 sRot; double tempRot[4];
+
+		transform.getScale(tempScale);
+		sScale = tempScale;
+
+		transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+		sRot.x = tempRot[0];
+		sRot.y = tempRot[1];
+		sRot.z = tempRot[2];
+		sRot.w = tempRot[3];
+
+		sTrans = transform.getTranslation(MSpace::kTransform, NULL);
+
+		char * pek = msg;
+		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+		pek += sizeof(MainHeader);
+
+		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+		pek += sizeof(Transformation);
+
+		memcpy(pek, (char*)transform.name().asChar(), mTransform.nameLength);
+		pek += mTransform.nameLength;
+
+		memcpy(pek, (char*)&sScale, sizeof(Vector));
+		pek += sizeof(Vector);
+
+		memcpy(pek, (char*)&sRot, sizeof(Vector4));
+		pek += sizeof(Vector4);
+
+		memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+
+		producer->push(msg, length);
+	}
+	if (modifiedTime > getUpdateTime()) //fix so it's only mesh
+	{
+	/*	if (!transformNode.hasFn(MFn::kCamera))*/
 		//if (modified & MDagMessage::kTranslation)
+		if (MFnTransform(transformNode).child(0).apiType() == MFn::kMesh)
 		{
+			//M3dView kiss;
+			//kiss.active3dView().updateViewingParameters();
+
 			MFnTransform trans = transformNode;
 
 			MGlobal::displayInfo(trans.name() + " worldmatrix changed");
@@ -94,12 +158,27 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
     kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
 }
 
+bool updateCamera()
+{
+	M3dView derp;
+	derp.updateViewingParameters();
+
+	MStatus rs;
+	MDagPath camPath;
+	rs = derp.getCamera(camPath);
+	MFnCamera sCamera(camPath);
+
+	MFnTransform transform = sCamera.parent(0);
+	return true;
+}
+
 void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 {
 	//DeltaTime = elapsedTime - lastTime;
 	modifiedTime += elapsedTime;
 	CurrentTime = elapsedTime;
 	//MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
+	//updateCamera();
 
 	/*if (CurrentTime > 0 && CurrentTime < 9)
 	{
