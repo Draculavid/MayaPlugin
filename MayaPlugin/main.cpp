@@ -202,7 +202,8 @@ bool createMesh(MObject &node)
 	sMesh.indexCount = indexList.length();
 	sMesh.nameLength = transform.name().length();
 	mMesh.getTriangleOffsets(normalCount, offsetIdList);
-	//mMesh.getVertices
+	MIntArray vertexList, vertexCount;
+	//mMesh.getVertices(vertexCount, vertexList);
 
 	/*getting the position of the mesh*/
 	Vector sTran, sScal;
@@ -240,10 +241,10 @@ bool createMesh(MObject &node)
 	{
 		kissaner += i;
 		kissaner += ": ";
-		kissaner += normalId[indexList[i]];
+		kissaner += normalId[offsetIdList[i]];
 		kissaner += ", ";
 		//kissaner += offsetIdList[indexList[i]];
-		kissaner += indexList[offsetIdList[i]];
+		kissaner += indexList[i];
 		kissaner += "\n";
 	}
 	MGlobal::displayInfo(kissaner);
@@ -268,67 +269,67 @@ bool createMesh(MObject &node)
 	sMesh.uvCount = u.length();
 
 	/*Calculating the length of the message and sending the creation info to the circular buffer*/
-	//int length = (sizeof(Vertex) * points.length())
-	//	+ (sizeof(Index) * indexList.length())
-	//	+ (sizeof(Normals) * normals.length())
-	//	+ (sizeof(Index) * offsetIdList.length())
-	//	+ (sizeof(Index) * normalId.length())
-	//	+ sizeof(CreateMesh)
-	//	+ sizeof(MainHeader)
-	//	+ sizeof(Vector)*2
-	//	+ sizeof(Vector4)
-	//	+ (sizeof(float) * u.length())*2
-	//	+ (sizeof(Index)*sMesh.uvIndexCount)
-	//	+ sMesh.nameLength;
+	int length = (sizeof(Vertex) * points.length())
+		+ (sizeof(Index) * indexList.length())
+		+ (sizeof(Normals) * normals.length())
+		+ (sizeof(Index) * offsetIdList.length())
+		+ (sizeof(Index) * normalId.length())
+		+ sizeof(CreateMesh)
+		+ sizeof(MainHeader)
+		+ sizeof(Vector)*2
+		+ sizeof(Vector4)
+		+ (sizeof(float) * u.length())*2
+		+ (sizeof(Index)*sMesh.uvIndexCount)
+		+ sMesh.nameLength;
 
-	//sMesh.normalIndexCount = normalId.length();
-	//
-	///*constructing the message*/
-	//char * pek = msg;
+	sMesh.normalIndexCount = normalId.length();
+	
+	/*constructing the message*/
+	char * pek = msg;
 
-	//memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
-	//pek += sizeof(MainHeader);
+	memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
 
-	//memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
-	//pek += sizeof(CreateMesh);
+	memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
+	pek += sizeof(CreateMesh);
 
-	//memcpy(pek, transform.name().asChar(), sMesh.nameLength);
-	//pek += sMesh.nameLength;
+	memcpy(pek, transform.name().asChar(), sMesh.nameLength);
+	pek += sMesh.nameLength;
 
-	//memcpy(pek, (char*)&sScal, sizeof(Vector));
-	//pek += sizeof(Vector);
+	memcpy(pek, (char*)&sScal, sizeof(Vector));
+	pek += sizeof(Vector);
 
-	//memcpy(pek, (char*)&sRot, sizeof(Vector4));
-	//pek += sizeof(Vector4);
+	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+	pek += sizeof(Vector4);
 
-	//memcpy(pek, (char*)&sTran, sizeof(Vector));
-	//pek += sizeof(Vector);
+	memcpy(pek, (char*)&sTran, sizeof(Vector));
+	pek += sizeof(Vector);
 
-	//memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
-	//pek += sizeof(Vertex)*sMesh.vertexCount;
+	memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
+	pek += sizeof(Vertex)*sMesh.vertexCount;
 
-	//memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
-	//pek += sizeof(Index)*sMesh.indexCount;
+	memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
+	pek += sizeof(Index)*sMesh.indexCount;
 
-	//memcpy(pek, (char*)mMesh.getRawNormals(NULL), (sizeof(Normals)*sMesh.normalCount));
-	//pek += sizeof(Normals)*sMesh.normalCount;
+	memcpy(pek, (char*)mMesh.getRawNormals(NULL), (sizeof(Normals)*sMesh.normalCount));
+	pek += sizeof(Normals)*sMesh.normalCount;
 
-	//memcpy(pek, (char*)&normalId[0], (sizeof(Index) * sMesh.normalIndexCount));
-	//pek += sizeof(Index)*sMesh.normalIndexCount;
+	memcpy(pek, (char*)&normalId[0], (sizeof(Index) * sMesh.normalIndexCount));
+	pek += sizeof(Index)*sMesh.normalIndexCount;
 
-	//memcpy(pek, (char*)&offsetIdList[0], (sizeof(Index)*sMesh.indexCount));
-	//pek += sizeof(Index)*sMesh.indexCount;
+	memcpy(pek, (char*)&offsetIdList[0], (sizeof(Index)*sMesh.indexCount));
+	pek += sizeof(Index)*sMesh.indexCount;
 
-	//memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
-	//pek += sizeof(float)*u.length();
+	memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
+	pek += sizeof(float)*u.length();
 
-	//memcpy(pek, (char*)&v[0], sizeof(float)*v.length());
-	//pek += sizeof(float)*u.length();
+	memcpy(pek, (char*)&v[0], sizeof(float)*v.length());
+	pek += sizeof(float)*u.length();
 
-	//memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
+	memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
 
 
-	/*while (true)
+	while (true)
 	{
 		try
 		{
@@ -342,7 +343,7 @@ bool createMesh(MObject &node)
 		{
 			Sleep(1);
 		}
-	}*/
+	}
 
 	return true;
 }
