@@ -202,7 +202,7 @@ bool createMesh(MObject &node)
 	sMesh.indexCount = indexList.length();
 	sMesh.nameLength = transform.name().length();
 	mMesh.getTriangleOffsets(normalCount, offsetIdList);
-
+	//mMesh.getVertices
 
 	/*getting the position of the mesh*/
 	Vector sTran, sScal;
@@ -240,9 +240,10 @@ bool createMesh(MObject &node)
 	{
 		kissaner += i;
 		kissaner += ": ";
-		kissaner += normalId[offsetIdList[i]];
+		kissaner += normalId[indexList[i]];
 		kissaner += ", ";
-		kissaner += indexList[i];
+		//kissaner += offsetIdList[indexList[i]];
+		kissaner += indexList[offsetIdList[i]];
 		kissaner += "\n";
 	}
 	MGlobal::displayInfo(kissaner);
@@ -267,64 +268,64 @@ bool createMesh(MObject &node)
 	sMesh.uvCount = u.length();
 
 	/*Calculating the length of the message and sending the creation info to the circular buffer*/
-	int length = (sizeof(Vertex) * points.length())
-		+ (sizeof(Index) * indexList.length())
-		+ (sizeof(Normals) * normals.length())
-		+ (sizeof(Index) * offsetIdList.length())
-		+ (sizeof(Index) * normalId.length())
-		+ sizeof(CreateMesh)
-		+ sizeof(MainHeader)
-		+ sizeof(Vector)*2
-		+ sizeof(Vector4)
-		+ (sizeof(float) * u.length())*2
-		+ (sizeof(Index)*sMesh.uvIndexCount)
-		+ sMesh.nameLength;
+	//int length = (sizeof(Vertex) * points.length())
+	//	+ (sizeof(Index) * indexList.length())
+	//	+ (sizeof(Normals) * normals.length())
+	//	+ (sizeof(Index) * offsetIdList.length())
+	//	+ (sizeof(Index) * normalId.length())
+	//	+ sizeof(CreateMesh)
+	//	+ sizeof(MainHeader)
+	//	+ sizeof(Vector)*2
+	//	+ sizeof(Vector4)
+	//	+ (sizeof(float) * u.length())*2
+	//	+ (sizeof(Index)*sMesh.uvIndexCount)
+	//	+ sMesh.nameLength;
 
-	sMesh.normalIndexCount = normalId.length();
-	
-	/*constructing the message*/
-	char * pek = msg;
+	//sMesh.normalIndexCount = normalId.length();
+	//
+	///*constructing the message*/
+	//char * pek = msg;
 
-	memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
-	pek += sizeof(MainHeader);
+	//memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
+	//pek += sizeof(MainHeader);
 
-	memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
-	pek += sizeof(CreateMesh);
+	//memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
+	//pek += sizeof(CreateMesh);
 
-	memcpy(pek, transform.name().asChar(), sMesh.nameLength);
-	pek += sMesh.nameLength;
+	//memcpy(pek, transform.name().asChar(), sMesh.nameLength);
+	//pek += sMesh.nameLength;
 
-	memcpy(pek, (char*)&sScal, sizeof(Vector));
-	pek += sizeof(Vector);
+	//memcpy(pek, (char*)&sScal, sizeof(Vector));
+	//pek += sizeof(Vector);
 
-	memcpy(pek, (char*)&sRot, sizeof(Vector4));
-	pek += sizeof(Vector4);
+	//memcpy(pek, (char*)&sRot, sizeof(Vector4));
+	//pek += sizeof(Vector4);
 
-	memcpy(pek, (char*)&sTran, sizeof(Vector));
-	pek += sizeof(Vector);
+	//memcpy(pek, (char*)&sTran, sizeof(Vector));
+	//pek += sizeof(Vector);
 
-	memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
-	pek += sizeof(Vertex)*sMesh.vertexCount;
+	//memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
+	//pek += sizeof(Vertex)*sMesh.vertexCount;
 
-	memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
-	pek += sizeof(Index)*sMesh.indexCount;
+	//memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
+	//pek += sizeof(Index)*sMesh.indexCount;
 
-	memcpy(pek, (char*)mMesh.getRawNormals(NULL), (sizeof(Normals)*sMesh.normalCount));
-	pek += sizeof(Normals)*sMesh.normalCount;
+	//memcpy(pek, (char*)mMesh.getRawNormals(NULL), (sizeof(Normals)*sMesh.normalCount));
+	//pek += sizeof(Normals)*sMesh.normalCount;
 
-	memcpy(pek, (char*)&normalId[0], (sizeof(Index) * sMesh.normalIndexCount));
-	pek += sizeof(Index)*sMesh.normalIndexCount;
+	//memcpy(pek, (char*)&normalId[0], (sizeof(Index) * sMesh.normalIndexCount));
+	//pek += sizeof(Index)*sMesh.normalIndexCount;
 
-	memcpy(pek, (char*)&offsetIdList[0], (sizeof(Index)*sMesh.indexCount));
-	pek += sizeof(Index)*sMesh.indexCount;
+	//memcpy(pek, (char*)&offsetIdList[0], (sizeof(Index)*sMesh.indexCount));
+	//pek += sizeof(Index)*sMesh.indexCount;
 
-	memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
-	pek += sizeof(float)*u.length();
+	//memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
+	//pek += sizeof(float)*u.length();
 
-	memcpy(pek, (char*)&v[0], sizeof(float)*v.length());
-	pek += sizeof(float)*u.length();
+	//memcpy(pek, (char*)&v[0], sizeof(float)*v.length());
+	//pek += sizeof(float)*u.length();
 
-	memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
+	//memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
 
 
 	/*while (true)
@@ -345,67 +346,146 @@ bool createMesh(MObject &node)
 
 	return true;
 }
-bool createCamera(MObject &node)
+//bool createCamera(MObject &node)
+//{
+//	MFnCamera sCamera = MFnTransform(node).child(0);
+//	MFnTransform transform = node;
+//	CreateCamera mCam{ transform.name().length() };
+//
+//	Vector sTrans;
+//	sTrans = transform.getTranslation(MSpace::kTransform);
+//	double tempRot[4]; Vector4 sRot;
+//	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+//	sRot.x = tempRot[0];
+//	sRot.y = tempRot[1];
+//	sRot.z = tempRot[2];
+//	sRot.w = tempRot[3];
+//
+//	size_t length =
+//		sizeof(CreateCamera)
+//		+ sizeof(floatMatrix)
+//		+ sizeof(MainHeader)
+//		+ sizeof(Vector4)
+//		+ sizeof(Vector)
+//		+ mCam.nameLength;
+//	char * pek = msg;
+//
+//	MainHeader mHead{ 1 };
+//
+//	memcpy(pek, &mHead, sizeof(MainHeader));
+//	pek += sizeof(MainHeader);
+//
+//	memcpy(pek, &mCam, sizeof(CreateCamera));
+//	pek += sizeof(CreateCamera);
+//
+//	memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
+//	pek += mCam.nameLength;
+//
+//	/*memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
+//	pek += sizeof(Matrix);*/
+//	
+//	memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
+//	pek += sizeof(floatMatrix);
+//
+//	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+//	pek += sizeof(Vector4);
+//
+//	memcpy(pek, (char*)&sTrans, sizeof(Vector));
+//
+//	while (true)
+//	{
+//		try
+//		{
+//			if (producer->push(msg, length))
+//			{
+//				break;
+//			}
+//		}
+//		catch (...)
+//		{
+//			Sleep(1);
+//		}
+//	}
+//	return true;
+//}
+bool createViewportCamera()
 {
-	MFnCamera sCamera = MFnTransform(node).child(0);
-	MFnTransform transform = node;
+	M3dView derp = derp.active3dView();
+	MDagPath camPath;
+	MStatus rs;
+
+	rs = derp.getCamera(camPath);
+	MFnCamera sCamera(camPath);
+
+	MFnTransform transform = sCamera.parent(0);
+	//MFnTransform ttransform = sCamera.parent(sCamera.parentCount());
+
+
 	CreateCamera mCam{ transform.name().length() };
 
-	Vector sTrans;
-	sTrans = transform.getTranslation(MSpace::kTransform);
-	double tempRot[4]; Vector4 sRot;
-	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-	sRot.x = tempRot[0];
-	sRot.y = tempRot[1];
-	sRot.z = tempRot[2];
-	sRot.w = tempRot[3];
-
-	size_t length =
-		sizeof(CreateCamera)
-		+ sizeof(floatMatrix)
-		+ sizeof(MainHeader)
-		+ sizeof(Vector4)
-		+ sizeof(Vector)
-		+ mCam.nameLength;
-	char * pek = msg;
-
-	MainHeader mHead{ 1 };
-
-	memcpy(pek, &mHead, sizeof(MainHeader));
-	pek += sizeof(MainHeader);
-
-	memcpy(pek, &mCam, sizeof(CreateCamera));
-	pek += sizeof(CreateCamera);
-
-	memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
-	pek += mCam.nameLength;
-
-	/*memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
-	pek += sizeof(Matrix);*/
-	
-	memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
-	pek += sizeof(floatMatrix);
-
-	memcpy(pek, (char*)&sRot, sizeof(Vector4));
-	pek += sizeof(Vector4);
-
-	memcpy(pek, (char*)&sTrans, sizeof(Vector));
-
-	while (true)
+	if (sCamera.isOrtho(&rs))
 	{
-		try
+		return false;
+	}
+	else
+	{
+		Vector sTrans;
+		sTrans = transform.getTranslation(MSpace::kTransform);
+		double tempRot[4]; Vector4 sRot;
+		transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+		sRot.x = tempRot[0];
+		sRot.y = tempRot[1];
+		sRot.z = tempRot[2];
+		sRot.w = tempRot[3];
+
+		size_t length =
+			sizeof(CreateCamera)
+			+ sizeof(floatMatrix)
+			+ sizeof(MainHeader)
+			+ sizeof(Vector4)
+			+ sizeof(Vector)
+			+ mCam.nameLength;
+		char * pek = msg;
+
+		MainHeader mHead{ 1 };
+
+		memcpy(pek, &mHead, sizeof(MainHeader));
+		pek += sizeof(MainHeader);
+
+		memcpy(pek, &mCam, sizeof(CreateCamera));
+		pek += sizeof(CreateCamera);
+
+		memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
+		pek += mCam.nameLength;
+
+		/*memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
+		pek += sizeof(Matrix);*/
+
+		memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
+		pek += sizeof(floatMatrix);
+
+		memcpy(pek, (char*)&sRot, sizeof(Vector4));
+		pek += sizeof(Vector4);
+
+		memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+		while (true)
 		{
-			if (producer->push(msg, length))
+			try
 			{
-				break;
+				if (producer->push(msg, length))
+				{
+					break;
+				}
+			}
+			catch (...)
+			{
+				Sleep(1);
 			}
 		}
-		catch (...)
-		{
-			Sleep(1);
-		}
+		return true;
 	}
-	return true;
+
 }
 #pragma endregion
 #pragma region Modified
@@ -423,8 +503,8 @@ EXPORT MStatus initializePlugin(MObject obj)
 	MStatus loopResults = MS::kSuccess;
 
 	/*creating the circular buffer*/
-	producer = new CircularBuffer(L"poop3", 20, true, 256);
-	msg = new char[(20 * (1 << 10))/4];
+	producer = new CircularBuffer(L"poop3", 100, true, 256);
+	msg = new char[(100 * (1 << 10))/4];
 
 	/*adding callback for matrix change in items that already exist*/
 	MItDag meshIt(MItDag::kBreadthFirst, MFn::kTransform, &res);
@@ -478,7 +558,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 		{
 			if (MFnTransform(meshIt.currentItem()).name() == "persp")
 			{
-				createCamera(meshIt.currentItem());
+				//createCamera(meshIt.currentItem());
 			}
 		}
 
@@ -508,7 +588,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			if (MFAIL(bajs))
 				MGlobal::displayInfo("failed to connest");
 		} */
-	}
+	}	createViewportCamera();
 	/*adding callback for time*/
 	MCallbackId newId = MTimerMessage::addTimerCallback(0.05, elapsedTimeFunction, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)

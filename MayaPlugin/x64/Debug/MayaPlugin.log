@@ -6,10 +6,10 @@
 \\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(51): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 \\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(190): warning C4018: '<': signed/unsigned mismatch
 \\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(239): warning C4018: '<': signed/unsigned mismatch
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(358): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 \\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(359): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 \\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(360): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 \\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(361): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(513): warning C4305: 'argument': truncation from 'double' to 'float'
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(516): warning C4390: ';': empty controlled statement found; is this the intent?
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(362): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(514): warning C4305: 'argument': truncation from 'double' to 'float'
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(517): warning C4390: ';': empty controlled statement found; is this the intent?
   MayaPlugin.vcxproj -> \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
