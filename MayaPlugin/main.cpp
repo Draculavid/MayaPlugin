@@ -19,7 +19,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 {
 	//asyncronous callback thread here to the elapsed time funtion, so that it will be called always to update
 	//the current time at all times. MThreadAsync.
-	//if (modifiedTime > getUpdateTime())
+	if (modifiedTime > getUpdateTime())
 	{
 		//if (modified & MDagMessage::kTranslation)
 		{
@@ -99,7 +99,7 @@ void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 	//DeltaTime = elapsedTime - lastTime;
 	modifiedTime += elapsedTime;
 	CurrentTime = elapsedTime;
-	MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
+	//MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
 
 	/*if (CurrentTime > 0 && CurrentTime < 9)
 	{
@@ -177,29 +177,34 @@ bool createMesh(MObject &node)
 	
 	MFnTransform transform = node;
 	MFnMesh mMesh(((MFnTransform)(node)).child(0), NULL);
-	MIntArray indexList, vertexList, normalCount, uvCount, uvIds;
+	MIntArray indexList, offsetIdList, normalCount, uvCount, uvIds;
 	MFloatPointArray points;
 	MFloatArray u, v;
 	MFloatVectorArray normals;
 	mMesh.getPoints(points, MSpace::kObject);
-	mMesh.getTriangles(vertexList, indexList);
+	mMesh.getTriangles(offsetIdList, indexList);
 
 	/*assigning the main header to creation mode*/
 	MainHeader sHeader{ 0 };
-
+	MString kissaner = "";
+	for (int i = 0; i < indexList.length(); i++)
+	{
+		kissaner += indexList[i];
+		kissaner += ", ";
+		//MGlobal::displayInfo(indexList[i] + "\n");
+	}
+	MGlobal::displayInfo(kissaner);
+	kissaner = "";
+	
 	/*Creating the headers to send*/
 	CreateMesh sMesh;
 	sMesh.vertexCount = points.length();
 	sMesh.indexCount = indexList.length();
 	sMesh.nameLength = transform.name().length();
-	mMesh.getTriangleOffsets(normalCount, vertexList);
+	mMesh.getTriangleOffsets(normalCount, offsetIdList);
 
-	//mMesh.getVertexNormals(true, normals, MSpace::kObject);
-	//mMesh.getFaceVertexNormals()
-	//mMesh.getNormalIds
-	//const float * punkts = mMesh.getRawPoints(NULL);
-	//mMesh.getVertices(normalCount, vertexList);
-	//MVector kiss;
+
+	/*getting the position of the mesh*/
 	Vector sTran, sScal;
 	Vector4 sRot;
 	double tempScale[3], tempRot[4];
@@ -211,94 +216,71 @@ bool createMesh(MObject &node)
 	sRot.z = (float)tempRot[2];
 	sRot.w = (float)tempRot[3];
 
-	//sRot = tempRot;
 	transform.getScale(tempScale);
 	sScal = tempScale;
 
-	const float * normz = mMesh.getRawNormals(NULL);
+	/*the normals*/
+	MIntArray test, normalId;
+	mMesh.getNormalIds(test, normalId);
 	mMesh.getNormals(normals, MSpace::kObject);
-
-	mMesh.getUVs(u, v);
-	//double * kukuk = new double[u.length()];
-	//u.get(kukuk);
-	//mMesh.getUVs(u, v);
-	mMesh.getAssignedUVs(uvCount, uvIds);
-	sMesh.uvIndexCount = uvIds.length();
-
-	sMesh.uvCount = u.length();
-
-	MString info;
-	/*for (int i = 0; i < u.length(); i++)
-	{
-		info += u[i];
-		info += ", ";
-		info += v[i];
-		info = "\n";
-	}*/
-	MGlobal::displayInfo(info);
-
 	sMesh.normalCount = normals.length();
 
-	/*for (int i = 0; i < normals.length(); i++)
-	{
-		info += normals[i].x;
-		info += ", ";
-		info += normals[i].y;
-		info += ", ";
-		info += normals[i].z;
-		info += "\n";
-	}
-	MGlobal::displayInfo(info);
-	info = "";
-	for (int i = 0; i < vertexList.length(); i++)
-	{
-		info += vertexList[i];
-		info += "; ";
-	}
-	MGlobal::displayInfo(info);
-	info = "";*/
-	//Vertex *mVertex = new Vertex[points.length()];
-	//Index *mIndex = new Index[indexList.length()];
+	kissaner = sMesh.normalCount;
+	kissaner += ", ";
+	kissaner += sMesh.indexCount;
+	kissaner += ", nr of normalids: ";
+	kissaner += normalId.length();
+	kissaner += ", nr of offsetids: ";
+	kissaner += offsetIdList.length();
+	MGlobal::displayInfo(kissaner);
+	
 
-	/*putting references to the points (vertex points)*/
-	/*for (int i = 0; i < points.length(); i++)
+	kissaner = "";
+	for (int i = 0; i < sMesh.indexCount; i++)
 	{
-		info += points[i].x;
-		info += ", ";
-		info += points[i].y;
-		info += ", ";
-		info += points[i].z;
-		info += "\n";
+		kissaner += i;
+		kissaner += ": ";
+		kissaner += normalId[offsetIdList[i]];
+		kissaner += ", ";
+		kissaner += indexList[i];
+		kissaner += "\n";
 	}
-	MGlobal::displayInfo(info);
-	info = "";*/
-	/*mVertex->x = points[0].x;
-	mVertex->y = points[0].y;
-	mVertex->z = points[0].z;*/
+	MGlobal::displayInfo(kissaner);
+	kissaner = "";
+	/*for (int i = 0; i < test.length(); i++)
+	{
+		kissaner += test[i];
+		kissaner += ", ";
+	}
+	MGlobal::displayInfo(kissaner);
+	kissaner = "";*/
+	/*for (int i = 0; i < test1.length(); i++)
+	{
+		kissaner += test1[i];
+		kissaner += ", ";
+	}*/
 
-	/*putting reference to the indexes of the triangles*/
-	/*for (int i = 0; i < indexList.length(); i++)
-	{
-		info += indexList[i];
-		info += "; ";
-	}
-	MGlobal::displayInfo(info);
-	info = "";
-*/
+	/*the uvs*/
+	mMesh.getUVs(u, v);
+	mMesh.getAssignedUVs(uvCount, uvIds);
+	sMesh.uvIndexCount = uvIds.length();
+	sMesh.uvCount = u.length();
+
 	/*Calculating the length of the message and sending the creation info to the circular buffer*/
 	int length = (sizeof(Vertex) * points.length())
 		+ (sizeof(Index) * indexList.length())
 		+ (sizeof(Normals) * normals.length())
-		+ (sizeof(Index) * vertexList.length())
+		+ (sizeof(Index) * offsetIdList.length())
+		+ (sizeof(Index) * normalId.length())
 		+ sizeof(CreateMesh)
 		+ sizeof(MainHeader)
 		+ sizeof(Vector)*2
 		+ sizeof(Vector4)
-		//+ sizeof(Matrix)
 		+ (sizeof(float) * u.length())*2
 		+ (sizeof(Index)*sMesh.uvIndexCount)
 		+ sMesh.nameLength;
 
+	sMesh.normalIndexCount = normalId.length();
 	
 	/*constructing the message*/
 	char * pek = msg;
@@ -309,7 +291,7 @@ bool createMesh(MObject &node)
 	memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
 	pek += sizeof(CreateMesh);
 
-	memcpy(pek, transform.name().asChar(), sMesh.nameLength); //check this
+	memcpy(pek, transform.name().asChar(), sMesh.nameLength);
 	pek += sMesh.nameLength;
 
 	memcpy(pek, (char*)&sScal, sizeof(Vector));
@@ -320,8 +302,6 @@ bool createMesh(MObject &node)
 
 	memcpy(pek, (char*)&sTran, sizeof(Vector));
 	pek += sizeof(Vector);
-	//memcpy(pek, (char*)&transform.transformationMatrix(), sizeof(Matrix));
-	//pek += sizeof(Matrix);
 
 	memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
 	pek += sizeof(Vertex)*sMesh.vertexCount;
@@ -329,10 +309,13 @@ bool createMesh(MObject &node)
 	memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
 	pek += sizeof(Index)*sMesh.indexCount;
 
-	memcpy(pek, (char*)normz, (sizeof(Normals)*sMesh.normalCount));
+	memcpy(pek, (char*)mMesh.getRawNormals(NULL), (sizeof(Normals)*sMesh.normalCount));
 	pek += sizeof(Normals)*sMesh.normalCount;
 
-	memcpy(pek, (char*)&vertexList[0], (sizeof(Index)*sMesh.indexCount));
+	memcpy(pek, (char*)&normalId[0], (sizeof(Index) * sMesh.normalIndexCount));
+	pek += sizeof(Index)*sMesh.normalIndexCount;
+
+	memcpy(pek, (char*)&offsetIdList[0], (sizeof(Index)*sMesh.indexCount));
 	pek += sizeof(Index)*sMesh.indexCount;
 
 	memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
@@ -344,7 +327,7 @@ bool createMesh(MObject &node)
 	memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
 
 
-	while (true)
+	/*while (true)
 	{
 		try
 		{
@@ -358,11 +341,8 @@ bool createMesh(MObject &node)
 		{
 			Sleep(1);
 		}
-	}
+	}*/
 
-	/*deleting the allocated variables*/
-	//delete[] mVertex;
-	//delete[] mIndex;
 	return true;
 }
 bool createCamera(MObject &node)
@@ -443,8 +423,8 @@ EXPORT MStatus initializePlugin(MObject obj)
 	MStatus loopResults = MS::kSuccess;
 
 	/*creating the circular buffer*/
-	producer = new CircularBuffer(L"poop3", 10, true, 256);
-	msg = new char[(10 * 1 << 10)/4];
+	producer = new CircularBuffer(L"poop3", 20, true, 256);
+	msg = new char[(20 * (1 << 10))/4];
 
 	/*adding callback for matrix change in items that already exist*/
 	MItDag meshIt(MItDag::kBreadthFirst, MFn::kTransform, &res);

@@ -9,6 +9,7 @@ struct CreateMesh
 	unsigned int vertexCount;
 	unsigned int indexCount;
 	unsigned int normalCount;
+	unsigned int normalIndexCount;
 	/*The name will be placed after the vertices and poop
 	, this number will be the exact number of characters
 	that make up the name. So put a null byte at nameLength+1*/
