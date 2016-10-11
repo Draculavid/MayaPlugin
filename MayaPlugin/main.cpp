@@ -73,29 +73,36 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 			if (modified & MDagMessage::kScale)
 			{
-				Transformation mTransform{ sList.length() , 0 };
-				size_t length;
 				char * pek = msg;
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+
+				Transformation mTransform{ sList.length() , 0 };
+				size_t length = 0;
 				unsigned int nameLength = 0;
+
+				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				pek += sizeof(Transformation);
 
 				for (int i = 0; i < sList.length(); ++i)
 				{
 					sList.getDagPath(i, nodePath);
-					//info += hejsan.partialPathName();
 					nameLength = nodePath.partialPathName().length();
 
 					memcpy(pek, (char*)nameLength, sizeof(unsigned int));
 					pek += sizeof(unsigned int);
+					length += sizeof(unsigned int);
 
-					memcpy(pek, (char*)nodePath.partialPathName().asChar(), nameLength);
+					memcpy(pek, nodePath.partialPathName().asChar(), nameLength);
 					pek += nameLength;
+					length += nameLength;
 				}
 
 
-				/*this will vary*/
-					/*sizeof(MainHeader)
+				length += 
+					sizeof(MainHeader)
 					+ sizeof(Transformation)
-					+ sizeof(Vector);*/
+					+ sizeof(Vector);
 
 				/*this will also vary*/
 				Vector sScale; double tempScale[3];
@@ -103,33 +110,52 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				trans.getScale(tempScale);
 				sScale = tempScale;
 
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-				pek += sizeof(MainHeader);
-
-				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-				pek += sizeof(Transformation);
-
-				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-				pek += mTransform.nameLength;
-
 				memcpy(pek, (char*)&sScale, sizeof(Vector));
 				pek += sizeof(Vector);
-
 
 				producer->push(msg, length);
 				
 			}
 			else if (modified & MDagMessage::kRotation)
 			{
-				Transformation mTransform{ trans.name().length() , 1 };
+				//Transformation mTransform{ trans.name().length() , 1 };
 
-				/*this will vary*/
-				size_t length =
+				///*this will vary*/
+				//size_t length =
+				//	sizeof(MainHeader)
+				//	+ sizeof(Transformation)
+				//	+ mTransform.nameLength
+				//	+ sizeof(Vector4);
+				char * pek = msg;
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+
+				Transformation mTransform{ sList.length() , 1 };
+				size_t length = 0;
+				unsigned int nameLength = 0;
+
+				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				pek += sizeof(Transformation);
+
+				for (int i = 0; i < sList.length(); ++i)
+				{
+					sList.getDagPath(i, nodePath);
+					nameLength = nodePath.partialPathName().length();
+
+					memcpy(pek, (char*)nameLength, sizeof(unsigned int));
+					pek += sizeof(unsigned int);
+					length += sizeof(unsigned int);
+
+					memcpy(pek, nodePath.partialPathName().asChar(), nameLength);
+					pek += nameLength;
+					length += nameLength;
+				}
+
+
+				length +=
 					sizeof(MainHeader)
 					+ sizeof(Transformation)
-					+ mTransform.nameLength
 					+ sizeof(Vector4);
-
 				/*this will also vary*/
 				double tempRot[4]; Vector4 sRot;
 
@@ -139,15 +165,15 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				sRot.z = (float)tempRot[2];
 				sRot.w = (float)tempRot[3];
 
-				char * pek = msg;
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-				pek += sizeof(MainHeader);
+				//char * pek = msg;
+				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				//pek += sizeof(MainHeader);
 
-				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-				pek += sizeof(Transformation);
+				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				//pek += sizeof(Transformation);
 
-				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-				pek += mTransform.nameLength;
+				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				//pek += mTransform.nameLength;
 
 				memcpy(pek, (char*)&sRot, sizeof(Vector4));
 				pek += sizeof(Vector);
@@ -158,28 +184,59 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 			}
 			else if (modified & MDagMessage::kTranslation)
 			{
-				Transformation mTransform{ trans.name().length() , 2 };
+				//Transformation mTransform{ trans.name().length() , 2 };
 
-				/*this will vary*/
-				size_t length =
+				///*this will vary*/
+				//size_t length =
+				//	sizeof(MainHeader)
+				//	+ sizeof(Transformation)
+				//	+ mTransform.nameLength
+				//	+ sizeof(Vector);
+
+				char * pek = msg;
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+
+				Transformation mTransform{ sList.length() , 0 };
+				size_t length = 0;
+				unsigned int nameLength = 0;
+
+				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				pek += sizeof(Transformation);
+
+				for (int i = 0; i < sList.length(); ++i)
+				{
+					sList.getDagPath(i, nodePath);
+					nameLength = nodePath.partialPathName().length();
+
+					memcpy(pek, (char*)nameLength, sizeof(unsigned int));
+					pek += sizeof(unsigned int);
+					length += sizeof(unsigned int);
+
+					memcpy(pek, nodePath.partialPathName().asChar(), nameLength);
+					pek += nameLength;
+					length += nameLength;
+				}
+
+
+				length +=
 					sizeof(MainHeader)
 					+ sizeof(Transformation)
-					+ mTransform.nameLength
 					+ sizeof(Vector);
 
 				/*this will also vary*/
 				Vector sTran;
 				sTran = trans.getTranslation(MSpace::kTransform, NULL);
 
-				char * pek = msg;
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-				pek += sizeof(MainHeader);
+				//char * pek = msg;
+				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				//pek += sizeof(MainHeader);
 
-				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-				pek += sizeof(Transformation);
+				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				//pek += sizeof(Transformation);
 
-				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-				pek += mTransform.nameLength;
+				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				//pek += mTransform.nameLength;
 
 				memcpy(pek, (char*)&sTran, sizeof(Vector));
 				pek += sizeof(Vector);
@@ -211,7 +268,7 @@ void preRenderCB(const MString& panelName, void * data)
 
 		//MGlobal::displayInfo(transform.name() + " worldmatrix changed");
 		MainHeader mHead{ 4 };
-		Transformation mTransform{ transform.name().length() , 3 };
+		Transformation mTransform{ 1 , 3 };
 
 		//kanske sätta en bool variabel som du skickar som "data
 		//ändra denna i worldmatrix changed för att visa att kameran har flyttat sig
@@ -237,6 +294,7 @@ void preRenderCB(const MString& panelName, void * data)
 		sRot.w = tempRot[3];
 
 		sTrans = transform.getTranslation(MSpace::kTransform, NULL);
+		unsigned int nameLength = transform.name().length();
 
 		char * pek = msg;
 		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
@@ -245,8 +303,11 @@ void preRenderCB(const MString& panelName, void * data)
 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 		pek += sizeof(Transformation);
 
-		memcpy(pek, (char*)transform.name().asChar(), mTransform.nameLength);
-		pek += mTransform.nameLength;
+		memcpy(pek, (char*)nameLength, sizeof(unsigned int));
+		pek += sizeof(unsigned int);
+
+		memcpy(pek, (char*)transform.name().asChar(), nameLength);
+		pek += nameLength;
 
 		memcpy(pek, (char*)&sScale, sizeof(Vector));
 		pek += sizeof(Vector);
