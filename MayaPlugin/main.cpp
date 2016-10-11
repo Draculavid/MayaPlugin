@@ -6,7 +6,7 @@
 #include <queue>
 
 using namespace std;
-#define UPDATE_TIME 2.0f
+#define UPDATE_TIME 0.5f
 #define QUEUE_VALUE 20
 
 CircularBuffer *producer;
@@ -289,11 +289,17 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 #pragma region Creation
 bool createMesh(MObject &node)
 {
+	//setAttr "pCubeShape1.quadSplit" 0;
 	if (node.apiType() != MFn::kInvalid)
 	{
 		MFnMesh mMesh(((MFnTransform)(node)).child(0), NULL);
 		if (mMesh.canBeWritten())
 		{
+			MString quadSplit = "setAttr """;
+			quadSplit += mMesh.name();
+			quadSplit += ".quadSplit"" 0;";
+			MGlobal::executeCommandStringResult(quadSplit);
+
 			MFnTransform transform = node;
 			MIntArray indexList, offsetIdList, normalCount, uvCount, uvIds;
 			MFloatPointArray points;
