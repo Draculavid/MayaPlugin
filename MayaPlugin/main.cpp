@@ -19,68 +19,7 @@ float getUpdateTime() { return 0.05; }
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
 	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
-	{
 		cameraMovement = true;
-	//	M3dView mCam = mCam.active3dView();
-	//	MDagPath camPath;
-	//	MStatus rs;
-
-	//	rs = mCam.getCamera(camPath);
-	//	MFnCamera sCamera(camPath);
-
-	//	MFnTransform transform = sCamera.parent(0);
-	//	
-	//	
-
-	//	MGlobal::displayInfo(transform.name() + " worldmatrix changed");
-	//	MainHeader mHead{ 4 };
-	//	Transformation mTransform{ transform.name().length() , 3 };
-
-
-
-	//	size_t length =
-	//		sizeof(MainHeader)
-	//		+ sizeof(Transformation)
-	//		+ transform.name().length()
-	//		+ sizeof(Vector) * 2
-	//		+ sizeof(Vector4);
-
-	//	/*this will also vary*/
-	//	Vector sTrans, sScale; double tempScale[3];
-	//	Vector4 sRot; double tempRot[4];
-
-	//	transform.getScale(tempScale);
-	//	sScale = tempScale;
-
-	//	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-	//	sRot.x = tempRot[0];
-	//	sRot.y = tempRot[1];
-	//	sRot.z = tempRot[2];
-	//	sRot.w = tempRot[3];
-
-	//	sTrans = transform.getTranslation(MSpace::kTransform, NULL);
-
-	//	char * pek = msg;
-	//	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-	//	pek += sizeof(MainHeader);
-
-	//	memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-	//	pek += sizeof(Transformation);
-
-	//	memcpy(pek, (char*)transform.name().asChar(), mTransform.nameLength);
-	//	pek += mTransform.nameLength;
-
-	//	memcpy(pek, (char*)&sScale, sizeof(Vector));
-	//	pek += sizeof(Vector);
-
-	//	memcpy(pek, (char*)&sRot, sizeof(Vector4));
-	//	pek += sizeof(Vector4);
-
-	//	memcpy(pek, (char*)&sTrans, sizeof(Vector));
-
-
-	//	producer->push(msg, length);
-	}
 	if (modifiedTime > getUpdateTime()) //fix so it's only mesh
 	{
 	/*	if (!transformNode.hasFn(MFn::kCamera))*/
@@ -89,76 +28,134 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 		{
 			//M3dView kiss;
 			//kiss.active3dView().updateViewingParameters();
-
 			MFnTransform trans = transformNode;
-
 			MGlobal::displayInfo(trans.name() + " worldmatrix changed");
 			MainHeader mHead{ 4 };
-			Transformation mTransform{ trans.name().length() , 3 };
 
-			/*this will vary*/
-			size_t length =
-				sizeof(MainHeader)
-				+ sizeof(Transformation)
-				+ mTransform.nameLength
-				+ sizeof(Vector) * 2
-				+ sizeof(Vector4);
+			/*MDagMessage
+			kScale         = kScaleX        | kScaleY        | kScaleZ,
+			kRotation      = kRotateX       | kRotateY       | kRotateZ,
+			kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
 
-			/*this will also vary*/
-			Vector sTrans, sScale; double tempScale[3];
-			Vector4 sRot; double tempRot[4];
-
-			trans.getScale(tempScale);
-			sScale = tempScale;
-
-			trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-			sRot.x = tempRot[0];
-			sRot.y = tempRot[1];
-			sRot.z = tempRot[2];
-			sRot.w = tempRot[3];
-
-			sTrans = trans.getTranslation(MSpace::kTransform, NULL);
-
-			char * pek = msg;
-			memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-			pek += sizeof(MainHeader);
-
-			memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-			pek += sizeof(Transformation);
-
-			memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-			pek += mTransform.nameLength;
-
-			memcpy(pek, (char*)&sScale, sizeof(Vector));
-			pek += sizeof(Vector);
-
-			memcpy(pek, (char*)&sRot, sizeof(Vector4));
-			pek += sizeof(Vector4);
-
-			memcpy(pek, (char*)&sTrans, sizeof(Vector));
-
-			modifiedTime = 0;
-
-			//while (true)
+			if (modified & MDagMessage::kScale)
 			{
-				//try
+				Transformation mTransform{ trans.name().length() , 0 };
+
+				/*this will vary*/
+				size_t length =
+					sizeof(MainHeader)
+					+ sizeof(Transformation)
+					+ mTransform.nameLength
+					+ sizeof(Vector);
+
+				/*this will also vary*/
+				Vector sScale; double tempScale[3];
+
+				trans.getScale(tempScale);
+				sScale = tempScale;
+
+				char * pek = msg;
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+
+				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				pek += sizeof(Transformation);
+
+				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				pek += mTransform.nameLength;
+
+				memcpy(pek, (char*)&sScale, sizeof(Vector));
+				pek += sizeof(Vector);
+
+				modifiedTime = 0;
+
+				//while (true)
 				{
-					if (producer->push(msg, length))
+					//try
 					{
-						//break;
+						if (producer->push(msg, length))
+						{
+							//break;
+						}
+					}
+					//catch (...)
+					{
+						//Sleep(1);
 					}
 				}
-				//catch (...)
-				{
-					//Sleep(1);
-				}
+			}
+			else if (modified & MDagMessage::kRotation)
+			{
+				Transformation mTransform{ trans.name().length() , 1 };
+
+				/*this will vary*/
+				size_t length =
+					sizeof(MainHeader)
+					+ sizeof(Transformation)
+					+ mTransform.nameLength
+					+ sizeof(Vector4);
+
+				/*this will also vary*/
+				double tempRot[4]; Vector4 sRot;
+
+				trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+				sRot.x = (float)tempRot[0];
+				sRot.y = (float)tempRot[1];
+				sRot.z = (float)tempRot[2];
+				sRot.w = (float)tempRot[3];
+
+				char * pek = msg;
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+
+				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				pek += sizeof(Transformation);
+
+				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				pek += mTransform.nameLength;
+
+				memcpy(pek, (char*)&sRot, sizeof(Vector4));
+				pek += sizeof(Vector);
+
+				modifiedTime = 0;
+
+				producer->push(msg, length);
+			}
+			else if (modified & MDagMessage::kTranslation)
+			{
+				Transformation mTransform{ trans.name().length() , 2 };
+
+				/*this will vary*/
+				size_t length =
+					sizeof(MainHeader)
+					+ sizeof(Transformation)
+					+ mTransform.nameLength
+					+ sizeof(Vector);
+
+				/*this will also vary*/
+				Vector sTran;
+				sTran = trans.getTranslation(MSpace::kTransform, NULL);
+
+				char * pek = msg;
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+
+				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				pek += sizeof(Transformation);
+
+				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				pek += mTransform.nameLength;
+
+				memcpy(pek, (char*)&sTran, sizeof(Vector));
+				pek += sizeof(Vector);
+
+				modifiedTime = 0;
+
+				producer->push(msg, length);
 			}
 		}
 	}
-	/*
-	kScale         = kScaleX        | kScaleY        | kScaleZ,
-	kRotation      = kRotateX       | kRotateY       | kRotateZ,
-    kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
+	
 }
 
 void preRenderCB(const MString& panelName, void * data)
@@ -245,6 +242,8 @@ bool updateCamera()
 
 void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 {
+	//model queue here!
+
 	//DeltaTime = elapsedTime - lastTime;
 	modifiedTime += elapsedTime;
 	CurrentTime = elapsedTime;
