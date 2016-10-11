@@ -84,12 +84,20 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 				pek += sizeof(Transformation);
 
+				Vector sScale; double tempScale[3];
+
+				trans.getScale(tempScale);
+				sScale = tempScale;
+
+				memcpy(pek, (char*)&sScale, sizeof(Vector));
+				pek += sizeof(Vector);
+
 				for (int i = 0; i < sList.length(); ++i)
 				{
 					sList.getDagPath(i, nodePath);
 					nameLength = nodePath.partialPathName().length();
 
-					memcpy(pek, (char*)nameLength, sizeof(unsigned int));
+					memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 					pek += sizeof(unsigned int);
 					length += sizeof(unsigned int);
 
@@ -105,13 +113,6 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					+ sizeof(Vector);
 
 				/*this will also vary*/
-				Vector sScale; double tempScale[3];
-
-				trans.getScale(tempScale);
-				sScale = tempScale;
-
-				memcpy(pek, (char*)&sScale, sizeof(Vector));
-				pek += sizeof(Vector);
 
 				producer->push(msg, length);
 				
@@ -137,12 +138,23 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 				pek += sizeof(Transformation);
 
+				double tempRot[4]; Vector4 sRot;
+
+				trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+				sRot.x = (float)tempRot[0];
+				sRot.y = (float)tempRot[1];
+				sRot.z = (float)tempRot[2];
+				sRot.w = (float)tempRot[3];
+
+				memcpy(pek, (char*)&sRot, sizeof(Vector4));
+				pek += sizeof(Vector);
+
 				for (int i = 0; i < sList.length(); ++i)
 				{
 					sList.getDagPath(i, nodePath);
 					nameLength = nodePath.partialPathName().length();
 
-					memcpy(pek, (char*)nameLength, sizeof(unsigned int));
+					memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 					pek += sizeof(unsigned int);
 					length += sizeof(unsigned int);
 
@@ -157,14 +169,6 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					+ sizeof(Transformation)
 					+ sizeof(Vector4);
 				/*this will also vary*/
-				double tempRot[4]; Vector4 sRot;
-
-				trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-				sRot.x = (float)tempRot[0];
-				sRot.y = (float)tempRot[1];
-				sRot.z = (float)tempRot[2];
-				sRot.w = (float)tempRot[3];
-
 				//char * pek = msg;
 				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				//pek += sizeof(MainHeader);
@@ -175,8 +179,6 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 				//pek += mTransform.nameLength;
 
-				memcpy(pek, (char*)&sRot, sizeof(Vector4));
-				pek += sizeof(Vector);
 
 				//modifiedTime = 0;
 
@@ -197,19 +199,25 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				pek += sizeof(MainHeader);
 
-				Transformation mTransform{ sList.length() , 0 };
+				Transformation mTransform{ sList.length() , 2 };
 				size_t length = 0;
 				unsigned int nameLength = 0;
 
 				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 				pek += sizeof(Transformation);
 
+				Vector sTran;
+				sTran = trans.getTranslation(MSpace::kTransform, NULL);
+
+				memcpy(pek, (char*)&sTran, sizeof(Vector));
+				pek += sizeof(Vector);
+
 				for (int i = 0; i < sList.length(); ++i)
 				{
 					sList.getDagPath(i, nodePath);
 					nameLength = nodePath.partialPathName().length();
 
-					memcpy(pek, (char*)nameLength, sizeof(unsigned int));
+					memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 					pek += sizeof(unsigned int);
 					length += sizeof(unsigned int);
 
@@ -218,16 +226,12 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					length += nameLength;
 				}
 
-
 				length +=
 					sizeof(MainHeader)
 					+ sizeof(Transformation)
 					+ sizeof(Vector);
 
 				/*this will also vary*/
-				Vector sTran;
-				sTran = trans.getTranslation(MSpace::kTransform, NULL);
-
 				//char * pek = msg;
 				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				//pek += sizeof(MainHeader);
@@ -238,8 +242,6 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 				//pek += mTransform.nameLength;
 
-				memcpy(pek, (char*)&sTran, sizeof(Vector));
-				pek += sizeof(Vector);
 
 				//modifiedTime = 0;
 
@@ -303,12 +305,6 @@ void preRenderCB(const MString& panelName, void * data)
 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 		pek += sizeof(Transformation);
 
-		memcpy(pek, (char*)nameLength, sizeof(unsigned int));
-		pek += sizeof(unsigned int);
-
-		memcpy(pek, (char*)transform.name().asChar(), nameLength);
-		pek += nameLength;
-
 		memcpy(pek, (char*)&sScale, sizeof(Vector));
 		pek += sizeof(Vector);
 
@@ -316,6 +312,12 @@ void preRenderCB(const MString& panelName, void * data)
 		pek += sizeof(Vector4);
 
 		memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+		memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		pek += sizeof(unsigned int);
+
+		memcpy(pek, (char*)transform.name().asChar(), nameLength);
+		pek += nameLength;
 
 		cameraMovement = false;
 		producer->push(msg, length);
