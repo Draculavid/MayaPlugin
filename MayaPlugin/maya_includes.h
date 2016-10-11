@@ -28,6 +28,7 @@
 #include <maya/MFnPointLight.h>
 #include <maya/MSelectionList.h>
 #include <maya/MItDependencyNodes.h>
+#include <maya/MItDependencyGraph.h>
 #include <maya/MFloatMatrix.h>
 #include <maya/MTimer.h>
 

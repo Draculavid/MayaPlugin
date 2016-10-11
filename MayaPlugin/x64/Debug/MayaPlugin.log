@@ -1,18 +1,2 @@
-﻿  main.cpp
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(118): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(119): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(120): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(121): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(205): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(206): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(207): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(208): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(352): warning C4018: '<': signed/unsigned mismatch
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(402): warning C4018: '<': signed/unsigned mismatch
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(600): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(601): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(602): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(603): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(757): warning C4305: 'argument': truncation from 'double' to 'float'
-c:\users\bth\desktop\mayaplugin2\mayaplugin\main.cpp(760): warning C4390: ';': empty controlled statement found; is this the intent?
+﻿     Creating library C:\Users\BTH\Desktop\MayaPlugin2\x64\Debug\MayaPlugin.lib and object C:\Users\BTH\Desktop\MayaPlugin2\x64\Debug\MayaPlugin.exp
   MayaPlugin.vcxproj -> C:\Users\BTH\Desktop\MayaPlugin2\x64\Debug\MayaPlugin.mll

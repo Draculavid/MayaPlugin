@@ -324,15 +324,152 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 	}
 }
 #pragma endregion
+
+MStatus getTextureFileInfo(MObject &shaderNode)
+{
+	MStatus res;
+	MItDependencyGraph textureIt(shaderNode, MFn::kFileTexture, MItDependencyGraph::kUpstream,		MItDependencyGraph::kBreadthFirst, MItDependencyGraph::kNodeLevel, &res);	if (res != MS::kSuccess)	{		MGlobal::displayInfo("ERROR: Could not create texture iterator\n");		return res;	}	res = textureIt.disablePruningOnFilter();	if (res != MS::kSuccess)		MGlobal::displayInfo("ERROR: Could not disable pruning on filter\n");	for (; !textureIt.isDone(); textureIt.next())
+	{
+		MFn::Type currentType = textureIt.thisNode().apiType();
+		MGlobal::displayInfo("ROVEN");
+
+		MObject textureNode = textureIt.currentItem(&res);
+		if (res != MS::kSuccess)
+		{
+			MGlobal::displayInfo("ERROR: Could not create MObject texture node\n");
+			return res;
+		}
+
+		MFnDependencyNode textureNodeFn(textureNode, &res);
+		if (res != MS::kSuccess)
+		{
+			MGlobal::displayInfo("ERROR: Could not create FnTexture\n");
+			return res;
+		}
+
+		MPlug attrib;
+		attrib = textureNodeFn.findPlug(MString("ftn"));
+		MString INFO = attrib.name();
+
+		MGlobal::displayInfo(INFO);
+
+
+
+
+	}
+}
+
 #pragma region Creation
 bool createMaterial(MObject &node, bool isPhong)
 {
-	MGlobal::displayInfo("\nLAMBERT MATERIAL FOUND\n");
+	MGlobal::displayInfo("\nMATERIAL FOUND\n");
+
+	MFnLambertShader lambert(node);
+
+	MString INFO = "NAME: ";
+	INFO += lambert.name();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("MATERIAL SHIT: \n");
+	INFO += lambert.ambientColor().r;
+	INFO += ", ";
+	INFO += lambert.ambientColor().g;
+	INFO += ", ";
+	INFO += lambert.ambientColor().b;
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Diffuse:");
+	INFO += lambert.color().r;
+	INFO += ", ";
+	INFO += lambert.color().g;
+	INFO += ", ";
+	INFO += lambert.color().b;
+	INFO += ", ";
+	INFO += lambert.diffuseCoeff();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Translucence:");
+	INFO += lambert.translucenceCoeff();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Transparency:");
+	INFO += lambert.transparency().r;
+	INFO += ", ";
+	INFO += lambert.transparency().g;
+	INFO += ", ";
+	INFO += lambert.transparency().b;
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Glow:");
+	INFO += lambert.glowIntensity();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Incandescence:");
+	INFO += lambert.incandescence().r;
+	INFO += ", ";
+	INFO += lambert.incandescence().g;
+	INFO += ", ";
+	INFO += lambert.incandescence().b;
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
 	if (isPhong)
+	{
 		MGlobal::displayInfo("AND IT HAS PHONG SHIT\n");
+		MFnPhongShader phong(node);
+
+		MGlobal::displayInfo("Spec:");
+		INFO += phong.specularColor().r;
+		INFO += ", ";
+		INFO += phong.specularColor().g;
+		INFO += ", ";
+		INFO += phong.specularColor().b;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		MGlobal::displayInfo("Shine:");
+		INFO += phong.cosPower();
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		MGlobal::displayInfo("Reflection color:");
+		INFO += phong.reflectedColor().r;
+		INFO += ", ";
+		INFO += phong.reflectedColor().g;
+		INFO += ", ";
+		INFO += phong.reflectedColor().b;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		MGlobal::displayInfo("Reflectivity:");
+		INFO += phong.reflectivity();
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+	}
+
+	MStatus res = getTextureFileInfo(node);
 
 	return true;
 }
+
+
 
 bool createMesh(MObject &node)
 {
@@ -778,14 +915,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 
 	MItDependencyNodes materialIt(MFn::kLambert, &res);	for (; !materialIt.isDone(); materialIt.next())
 	{
-		
-		if(materialIt.thisNode().hasFn(MFn::kLambert))
-			MGlobal::displayInfo("LAMBERT");
-		if (materialIt.thisNode().hasFn(MFn::kLambertMaterial))
-			MGlobal::displayInfo("LAMBERTMAT");
-
 		MFn::Type currentType = materialIt.thisNode().apiType();
-		MGlobal::displayInfo("HEJ");
 		createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
 
 	}

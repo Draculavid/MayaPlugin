@@ -73,7 +73,7 @@ struct ambient
 };
 struct diffuse
 {
-	float r, g, b;
+	float r, g, b, coeff;
 };
 struct specular
 {
