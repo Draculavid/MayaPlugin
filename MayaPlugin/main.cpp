@@ -10,6 +10,7 @@ CircularBuffer *producer;
 MCallbackIdArray myCallbackArray;
 float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
 float modifiedTime = 0;
+bool cameraMovement = false;
 //float DeltaTime = 0;
 char * msg;
 
@@ -19,64 +20,66 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 {
 	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
 	{
-		M3dView mCam;
-		mCam.active3dView();
-		mCam.updateViewingParameters();
+		cameraMovement = true;
+	//	M3dView mCam = mCam.active3dView();
+	//	MDagPath camPath;
+	//	MStatus rs;
 
-		MStatus rs;
-		MDagPath camPath;
-		rs = mCam.getCamera(camPath);
-		MFnCamera sCamera(camPath);
-		MFnTransform transform = sCamera.parent(0);
+	//	rs = mCam.getCamera(camPath);
+	//	MFnCamera sCamera(camPath);
 
-		MGlobal::displayInfo(transform.name() + " worldmatrix changed");
-		MainHeader mHead{ 4 };
-		Transformation mTransform{ transform.name().length() , 3 };
+	//	MFnTransform transform = sCamera.parent(0);
+	//	
+	//	
 
-
-
-		size_t length =
-			sizeof(MainHeader)
-			+ sizeof(Transformation)
-			+ transform.name().length()
-			+ sizeof(Vector) * 2
-			+ sizeof(Vector4);
-
-		/*this will also vary*/
-		Vector sTrans, sScale; double tempScale[3];
-		Vector4 sRot; double tempRot[4];
-
-		transform.getScale(tempScale);
-		sScale = tempScale;
-
-		transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-		sRot.x = tempRot[0];
-		sRot.y = tempRot[1];
-		sRot.z = tempRot[2];
-		sRot.w = tempRot[3];
-
-		sTrans = transform.getTranslation(MSpace::kTransform, NULL);
-
-		char * pek = msg;
-		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-		pek += sizeof(MainHeader);
-
-		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-		pek += sizeof(Transformation);
-
-		memcpy(pek, (char*)transform.name().asChar(), mTransform.nameLength);
-		pek += mTransform.nameLength;
-
-		memcpy(pek, (char*)&sScale, sizeof(Vector));
-		pek += sizeof(Vector);
-
-		memcpy(pek, (char*)&sRot, sizeof(Vector4));
-		pek += sizeof(Vector4);
-
-		memcpy(pek, (char*)&sTrans, sizeof(Vector));
+	//	MGlobal::displayInfo(transform.name() + " worldmatrix changed");
+	//	MainHeader mHead{ 4 };
+	//	Transformation mTransform{ transform.name().length() , 3 };
 
 
-		producer->push(msg, length);
+
+	//	size_t length =
+	//		sizeof(MainHeader)
+	//		+ sizeof(Transformation)
+	//		+ transform.name().length()
+	//		+ sizeof(Vector) * 2
+	//		+ sizeof(Vector4);
+
+	//	/*this will also vary*/
+	//	Vector sTrans, sScale; double tempScale[3];
+	//	Vector4 sRot; double tempRot[4];
+
+	//	transform.getScale(tempScale);
+	//	sScale = tempScale;
+
+	//	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+	//	sRot.x = tempRot[0];
+	//	sRot.y = tempRot[1];
+	//	sRot.z = tempRot[2];
+	//	sRot.w = tempRot[3];
+
+	//	sTrans = transform.getTranslation(MSpace::kTransform, NULL);
+
+	//	char * pek = msg;
+	//	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+	//	pek += sizeof(MainHeader);
+
+	//	memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+	//	pek += sizeof(Transformation);
+
+	//	memcpy(pek, (char*)transform.name().asChar(), mTransform.nameLength);
+	//	pek += mTransform.nameLength;
+
+	//	memcpy(pek, (char*)&sScale, sizeof(Vector));
+	//	pek += sizeof(Vector);
+
+	//	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+	//	pek += sizeof(Vector4);
+
+	//	memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+
+	//	producer->push(msg, length);
 	}
 	if (modifiedTime > getUpdateTime()) //fix so it's only mesh
 	{
@@ -156,6 +159,74 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 	kScale         = kScaleX        | kScaleY        | kScaleZ,
 	kRotation      = kRotateX       | kRotateY       | kRotateZ,
     kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
+}
+
+void preRenderCB(const MString& panelName, void * data)
+{
+	if (cameraMovement)
+	{
+		MGlobal::displayInfo(panelName);
+		M3dView mCam = mCam.active3dView();
+		MDagPath camPath;
+		MStatus rs;
+
+		rs = mCam.getCamera(camPath);
+		MFnCamera sCamera(camPath);
+
+		MFnTransform transform = sCamera.parent(0);
+
+
+
+		//MGlobal::displayInfo(transform.name() + " worldmatrix changed");
+		MainHeader mHead{ 4 };
+		Transformation mTransform{ transform.name().length() , 3 };
+
+		//kanske sätta en bool variabel som du skickar som "data
+		//ändra denna i worldmatrix changed för att visa att kameran har flyttat sig
+
+		size_t length =
+			sizeof(MainHeader)
+			+ sizeof(Transformation)
+			+ transform.name().length()
+			+ sizeof(Vector) * 2
+			+ sizeof(Vector4);
+
+		/*this will also vary*/
+		Vector sTrans, sScale; double tempScale[3];
+		Vector4 sRot; double tempRot[4];
+
+		transform.getScale(tempScale);
+		sScale = tempScale;
+
+		transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+		sRot.x = tempRot[0];
+		sRot.y = tempRot[1];
+		sRot.z = tempRot[2];
+		sRot.w = tempRot[3];
+
+		sTrans = transform.getTranslation(MSpace::kTransform, NULL);
+
+		char * pek = msg;
+		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+		pek += sizeof(MainHeader);
+
+		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+		pek += sizeof(Transformation);
+
+		memcpy(pek, (char*)transform.name().asChar(), mTransform.nameLength);
+		pek += mTransform.nameLength;
+
+		memcpy(pek, (char*)&sScale, sizeof(Vector));
+		pek += sizeof(Vector);
+
+		memcpy(pek, (char*)&sRot, sizeof(Vector4));
+		pek += sizeof(Vector4);
+
+		memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+		cameraMovement = false;
+		producer->push(msg, length);
+	}
 }
 
 bool updateCamera()
@@ -703,6 +774,18 @@ EXPORT MStatus initializePlugin(MObject obj)
 	}
 	else
 		MGlobal::displayInfo("Failed to create addNodeCallback function");
+
+	newId = MUiMessage::add3dViewPreRenderMsgCallback("modelPanel4", preRenderCB, NULL, &loopResults);
+	if (loopResults == MS::kSuccess)
+	{
+		if (myCallbackArray.append(newId) == MS::kSuccess)
+		{
+			MGlobal::displayInfo("created 3dpreprocess function");
+		}
+	}
+	else
+		MGlobal::displayInfo("Failed to create 3dpreprocess function");
+
 
 	return res;
 }

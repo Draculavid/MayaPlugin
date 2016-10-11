@@ -48,3 +48,7 @@ Temporary Items
 MayaPlugin.VC.VC.opendb
 .vs/MayaPlugin/v14/.suo
 MayaPlugin.VC.db
+.vs/MayaPlugin/v14/.suo
+*.db
+MayaPlugin/x64/Debug/vc140.idb
+*.pdb
