@@ -5,22 +5,22 @@
 #include "CircularBuffer.h"//<-------------------------- fix this later so that it's a lib
 
 using namespace std;
+#define UPDATE_TIME 2.0f
 
 CircularBuffer *producer;
 MCallbackIdArray myCallbackArray;
 float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
-float modifiedTime = 0;
+//float modifiedTime = 0;
 bool cameraMovement = false;
 //float DeltaTime = 0;
 char * msg;
 
 #pragma region callbacks
-float getUpdateTime() { return 0.05; }
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
 	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
 		cameraMovement = true;
-	if (modifiedTime > getUpdateTime()) //fix so it's only mesh
+	//if (modifiedTime > UPDATE_TIME) //fix so it's only mesh
 	{
 	/*	if (!transformNode.hasFn(MFn::kCamera))*/
 		//if (modified & MDagMessage::kTranslation)
@@ -67,7 +67,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				memcpy(pek, (char*)&sScale, sizeof(Vector));
 				pek += sizeof(Vector);
 
-				modifiedTime = 0;
+				//modifiedTime = 0;
 
 				//while (true)
 				{
@@ -117,7 +117,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				memcpy(pek, (char*)&sRot, sizeof(Vector4));
 				pek += sizeof(Vector);
 
-				modifiedTime = 0;
+				//modifiedTime = 0;
 
 				producer->push(msg, length);
 			}
@@ -149,7 +149,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				memcpy(pek, (char*)&sTran, sizeof(Vector));
 				pek += sizeof(Vector);
 
-				modifiedTime = 0;
+				//modifiedTime = 0;
 
 				producer->push(msg, length);
 			}
@@ -245,7 +245,7 @@ void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 	//model queue here!
 
 	//DeltaTime = elapsedTime - lastTime;
-	modifiedTime += elapsedTime;
+	//modifiedTime += elapsedTime;
 	CurrentTime = elapsedTime;
 	//MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
 	//updateCamera();
@@ -653,8 +653,8 @@ EXPORT MStatus initializePlugin(MObject obj)
 	MStatus loopResults = MS::kSuccess;
 
 	/*creating the circular buffer*/
-	producer = new CircularBuffer(L"poop3", 100, true, 256);
-	msg = new char[(100 * (1 << 10))/4];
+	producer = new CircularBuffer(L"poop3", 300, true, 256);
+	msg = new char[(300 * (1 << 10))/4];
 
 	/*adding callback for matrix change in items that already exist*/
 	MItDag meshIt(MItDag::kBreadthFirst, MFn::kTransform, &res);
@@ -740,7 +740,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 		} */
 	}	createViewportCamera();
 	/*adding callback for time*/
-	MCallbackId newId = MTimerMessage::addTimerCallback(0.05, elapsedTimeFunction, NULL, &loopResults);
+	MCallbackId newId = MTimerMessage::addTimerCallback(UPDATE_TIME, elapsedTimeFunction, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
 		if (myCallbackArray.append(newId) == MS::kSuccess);
