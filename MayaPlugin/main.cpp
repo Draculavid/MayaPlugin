@@ -5,6 +5,7 @@
 #include "CircularBuffer.h"//<-------------------------- fix this later so that it's a lib
 
 using namespace std;
+#define UPDATETIME 0.05
 
 CircularBuffer *producer;
 MCallbackIdArray myCallbackArray;
@@ -14,8 +15,10 @@ bool cameraMovement = false;
 //float DeltaTime = 0;
 char * msg;
 
+
+
 #pragma region callbacks
-float getUpdateTime() { return 0.05; }
+
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
 	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
@@ -81,7 +84,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 	//	producer->push(msg, length);
 	}
-	if (modifiedTime > getUpdateTime()) //fix so it's only mesh
+	if (modifiedTime > UPDATETIME) //fix so it's only mesh
 	{
 	/*	if (!transformNode.hasFn(MFn::kCamera))*/
 		//if (modified & MDagMessage::kTranslation)
@@ -322,6 +325,15 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 }
 #pragma endregion
 #pragma region Creation
+bool createMaterial(MObject &node, bool isPhong)
+{
+	MGlobal::displayInfo("\nLAMBERT MATERIAL FOUND\n");
+	if (isPhong)
+		MGlobal::displayInfo("AND IT HAS PHONG SHIT\n");
+
+	return true;
+}
+
 bool createMesh(MObject &node)
 {
 	
@@ -559,6 +571,7 @@ bool createMesh(MObject &node)
 //	}
 //	return true;
 //}
+
 bool createViewportCamera()
 {
 	M3dView derp = derp.active3dView();
@@ -739,9 +752,9 @@ EXPORT MStatus initializePlugin(MObject obj)
 			if (MFAIL(bajs))
 				MGlobal::displayInfo("failed to connest");
 		} */
-	}	createViewportCamera();
+	}	createViewportCamera();
 	/*adding callback for time*/
-	MCallbackId newId = MTimerMessage::addTimerCallback(0.05, elapsedTimeFunction, NULL, &loopResults);
+	MCallbackId newId = MTimerMessage::addTimerCallback(UPDATETIME, elapsedTimeFunction, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
 		if (myCallbackArray.append(newId) == MS::kSuccess);
@@ -762,6 +775,20 @@ EXPORT MStatus initializePlugin(MObject obj)
 		else
 			MGlobal::displayInfo("failed to connect NameChangeFunction");
 	}*/
+
+	MItDependencyNodes materialIt(MFn::kLambert, &res);	for (; !materialIt.isDone(); materialIt.next())
+	{
+		
+		if(materialIt.thisNode().hasFn(MFn::kLambert))
+			MGlobal::displayInfo("LAMBERT");
+		if (materialIt.thisNode().hasFn(MFn::kLambertMaterial))
+			MGlobal::displayInfo("LAMBERTMAT");
+
+		MFn::Type currentType = materialIt.thisNode().apiType();
+		MGlobal::displayInfo("HEJ");
+		createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
+
+	}
 
 	/*adding callback for creating node*/
 	newId = MDGMessage::addNodeAddedCallback(addedNodeFunction, kDefaultNodeType, NULL, &loopResults);

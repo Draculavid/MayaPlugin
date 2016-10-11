@@ -60,6 +60,27 @@ struct Vector4
 {
 	float x, y, z, w;
 };
+
+#pragma region MaterialStructs
+struct createMaterial
+{
+	unsigned int texturePathLength;
+	unsigned int nameLength;
+};
+struct ambient
+{
+	float r, g, b;
+};
+struct diffuse
+{
+	float r, g, b;
+};
+struct specular
+{
+	float r, g, b, shine;
+};
+
+#pragma endregion
 /*
 enum MsgType
 {
