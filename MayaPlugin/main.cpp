@@ -50,6 +50,16 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 		//if (modified & MDagMessage::kTranslation)
 		if (MFnTransform(transformNode).child(0).apiType() == MFn::kMesh)
 		{
+			//MString listName;
+			MSelectionList sList;
+			MGlobal::getActiveSelectionList(sList);
+			MDagPath nodePath;
+
+			//MGlobal::displayInfo(listName);
+			//MString info;
+			
+			
+
 			//M3dView kiss;
 			//kiss.active3dView().updateViewingParameters();
 			MFnTransform trans = transformNode;
@@ -63,14 +73,29 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 			if (modified & MDagMessage::kScale)
 			{
-				Transformation mTransform{ trans.name().length() , 0 };
+				Transformation mTransform{ sList.length() , 0 };
+				size_t length;
+				char * pek = msg;
+				unsigned int nameLength = 0;
+
+				for (int i = 0; i < sList.length(); ++i)
+				{
+					sList.getDagPath(i, nodePath);
+					//info += hejsan.partialPathName();
+					nameLength = nodePath.partialPathName().length();
+
+					memcpy(pek, (char*)nameLength, sizeof(unsigned int));
+					pek += sizeof(unsigned int);
+
+					memcpy(pek, (char*)nodePath.partialPathName().asChar(), nameLength);
+					pek += nameLength;
+				}
+
 
 				/*this will vary*/
-				size_t length =
-					sizeof(MainHeader)
+					/*sizeof(MainHeader)
 					+ sizeof(Transformation)
-					+ mTransform.nameLength
-					+ sizeof(Vector);
+					+ sizeof(Vector);*/
 
 				/*this will also vary*/
 				Vector sScale; double tempScale[3];
@@ -78,7 +103,6 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				trans.getScale(tempScale);
 				sScale = tempScale;
 
-				char * pek = msg;
 				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				pek += sizeof(MainHeader);
 
@@ -91,22 +115,9 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				memcpy(pek, (char*)&sScale, sizeof(Vector));
 				pek += sizeof(Vector);
 
-				//modifiedTime = 0;
 
-				//while (true)
-				{
-					//try
-					{
-						if (producer->push(msg, length))
-						{
-							//break;
-						}
-					}
-					//catch (...)
-					{
-						//Sleep(1);
-					}
-				}
+				producer->push(msg, length);
+				
 			}
 			else if (modified & MDagMessage::kRotation)
 			{

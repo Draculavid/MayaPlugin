@@ -1,12 +1,1 @@
-﻿  main.cpp
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(223): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(224): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(225): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(226): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(565): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(566): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(567): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(568): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(630): warning C4018: '<': signed/unsigned mismatch
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(794): warning C4390: ';': empty controlled statement found; is this the intent?
-  MayaPlugin.vcxproj -> \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
+﻿  MayaPlugin.vcxproj -> \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
