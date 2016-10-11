@@ -3,18 +3,42 @@
 #include "structs.h"
 #include <iostream>
 #include "CircularBuffer.h"//<-------------------------- fix this later so that it's a lib
+#include <queue>
 
 using namespace std;
 #define UPDATE_TIME 2.0f
+#define QUEUE_VALUE 20
 
 CircularBuffer *producer;
 MCallbackIdArray myCallbackArray;
 float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
 bool cameraMovement = false;
-MObject modelQueue;
+MObject modelQueue[QUEUE_VALUE];
+unsigned int nrInQueue = 0;
 char * msg;
+//std::queue <MObject>modelQueue;
 
+void popQueue(int * position)
+{
+	modelQueue[*position] = MObject::kNullObj;
+	nrInQueue--;
 
+	//MObject * temp;
+	//temp = &modelQueue[*position];
+	modelQueue[*position] = modelQueue[nrInQueue];
+	modelQueue[nrInQueue] = MObject::kNullObj;
+
+}
+bool appendQueue(MObject & node)
+{
+	if (nrInQueue <= QUEUE_VALUE)
+	{
+		modelQueue[nrInQueue] = node;
+		nrInQueue++;
+		return true;
+	}
+	return false;
+}
 #pragma region callbacks
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
@@ -239,7 +263,6 @@ bool updateCamera()
 	MFnTransform transform = sCamera.parent(0);
 	return true;
 }
-
 
 void attributeChanged(MNodeMessage::AttributeMessage msg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
@@ -596,11 +619,12 @@ void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 	//DeltaTime = elapsedTime - lastTime;
 	//modifiedTime += elapsedTime;
 	CurrentTime = elapsedTime;
-	if (modelQueue.apiType() != MFn::kInvalid)
+	if (nrInQueue != 0)
 	{
-		if (createMesh(modelQueue))
+		for (int i = 0; i < nrInQueue; ++i)
 		{
-			modelQueue = MObject::kNullObj;
+			if (createMesh(modelQueue[i]))
+				popQueue(&i);
 		}
 	}
 	//MGlobal::displayInfo((MString("Current time: ")+=(CurrentTime)));
@@ -652,7 +676,7 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 				MGlobal::displayInfo("failed to connect attributes");
 			if (!createMesh(node))
 			{
-				modelQueue = node;
+				appendQueue(node);
 			}
 		}
 	}
