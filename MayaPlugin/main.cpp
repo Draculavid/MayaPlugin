@@ -439,7 +439,7 @@ void preRenderCB(const MString& panelName, void * data)
 {
 	if (cameraMovement)
 	{
-		MGlobal::displayInfo(panelName);
+		//MGlobal::displayInfo(panelName);
 		M3dView mCam = mCam.active3dView();
 		MDagPath camPath;
 		MStatus rs;
@@ -453,7 +453,6 @@ void preRenderCB(const MString& panelName, void * data)
 
 		//MGlobal::displayInfo(transform.name() + " worldmatrix changed");
 		MainHeader mHead{ 4 };
-		Transformation mTransform{ 1 , 3 };
 
 		//kanske sätta en bool variabel som du skickar som "data
 		//ändra denna i worldmatrix changed för att visa att kameran har flyttat sig
@@ -480,6 +479,7 @@ void preRenderCB(const MString& panelName, void * data)
 
 		sTrans = transform.getTranslation(MSpace::kTransform, NULL);
 		unsigned int nameLength = transform.name().length();
+		Transformation mTransform{ nameLength, 3 };
 
 		char * pek = msg;
 		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
@@ -487,6 +487,9 @@ void preRenderCB(const MString& panelName, void * data)
 
 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 		pek += sizeof(Transformation);
+
+		memcpy(pek, (char*)transform.name().asChar(), nameLength);
+		pek += nameLength;
 
 		memcpy(pek, (char*)&sScale, sizeof(Vector));
 		pek += sizeof(Vector);
@@ -496,11 +499,9 @@ void preRenderCB(const MString& panelName, void * data)
 
 		memcpy(pek, (char*)&sTrans, sizeof(Vector));
 
-		memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-		pek += sizeof(unsigned int);
+		//memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		//pek += sizeof(unsigned int);
 
-		memcpy(pek, (char*)transform.name().asChar(), nameLength);
-		pek += nameLength;
 
 		cameraMovement = false;
 		producer->push(msg, length);
