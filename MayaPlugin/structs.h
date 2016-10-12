@@ -18,7 +18,7 @@ struct CreateMesh
 };
 struct Transformation
 {
-	unsigned int nrOfMeshes;
+	unsigned int nameLength;
 	unsigned int modified;
 };
 struct CreateCamera

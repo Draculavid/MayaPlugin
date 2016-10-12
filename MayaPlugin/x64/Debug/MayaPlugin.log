@@ -1,15 +1,14 @@
 ﻿  main.cpp
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(87): warning C4018: '<': signed/unsigned mismatch
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(140): warning C4018: '<': signed/unsigned mismatch
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(207): warning C4018: '<': signed/unsigned mismatch
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(291): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(292): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(293): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(294): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(637): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(638): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(639): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(640): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(702): warning C4018: '<': signed/unsigned mismatch
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(866): warning C4390: ';': empty controlled statement found; is this the intent?
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(476): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(477): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(478): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(479): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(822): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(823): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(824): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(825): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(887): warning C4018: '<': signed/unsigned mismatch
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1051): warning C4390: ';': empty controlled statement found; is this the intent?
+  LINK : \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll not found or not built by the last incremental link; performing full link
+     Creating library \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.lib and object \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.exp
   MayaPlugin.vcxproj -> \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
