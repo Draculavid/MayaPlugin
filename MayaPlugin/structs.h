@@ -45,7 +45,7 @@ struct floatMatrix
 {
 	float m[16];
 };
-struct Vector
+struct Vector//vectors are shit
 {
 	float x, y, z;
 	Vector& operator=(const MVector& other)
@@ -60,6 +60,26 @@ struct Vector4
 {
 	float x, y, z, w;
 };
+#pragma region MaterialStructs
+struct createMaterial
+{
+	unsigned int texturePathLength;
+	unsigned int nameLength;
+};
+struct ambient
+{
+	float r, g, b;
+};
+struct diffuse
+{
+	float r, g, b, coeff;
+};
+struct specular
+{
+	float r, g, b, shine;
+};
+
+#pragma endregion
 /*
 enum MsgType
 {

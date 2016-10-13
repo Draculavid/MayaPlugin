@@ -30,6 +30,7 @@
 #include <maya/MItDependencyNodes.h>
 #include <maya/MFloatMatrix.h>
 #include <maya/MTimer.h>
+#include <maya/MItDependencyGraph.h>
 
 // Wrappers
 #include <maya/MGlobal.h>

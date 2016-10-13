@@ -544,7 +544,166 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 //fix adde node funtion so that you just use a function that creates everything/adds callbakcs
 //add topology changed callback
 #pragma endregion
+MStatus getTextureFileInfo(MObject &shaderNode)
+{
+	MStatus res;
+	MItDependencyGraph textureIt(shaderNode, MFn::kFileTexture, MItDependencyGraph::kUpstream,
+		MItDependencyGraph::kBreadthFirst, MItDependencyGraph::kNodeLevel, &res);
+
+	if (res != MS::kSuccess)
+	{
+		MGlobal::displayInfo("ERROR: Could not create texture iterator\n");
+		return res;
+	}
+
+	res = textureIt.disablePruningOnFilter();
+	if (res != MS::kSuccess)
+		MGlobal::displayInfo("ERROR: Could not disable pruning on filter\n");
+
+
+
+	for (; !textureIt.isDone(); textureIt.next())
+	{
+		MFn::Type currentType = textureIt.thisNode().apiType();
+		MGlobal::displayInfo("ROVEN");
+
+		MObject textureNode = textureIt.currentItem(&res);
+		if (res != MS::kSuccess)
+		{
+			MGlobal::displayInfo("ERROR: Could not create MObject texture node\n");
+			return res;
+		}
+
+		MFnDependencyNode textureNodeFn(textureNode, &res);
+		if (res != MS::kSuccess)
+		{
+			MGlobal::displayInfo("ERROR: Could not create FnTexture\n");
+			return res;
+		}
+
+		MPlug attrib;
+		attrib = textureNodeFn.findPlug(MString("ftn"));
+		MString INFO = attrib.name();
+
+		MGlobal::displayInfo(INFO);
+
+
+
+
+	}
+}
 #pragma region Creation
+
+#pragma region Creation
+bool createMaterial(MObject &node, bool isPhong)
+{
+	MGlobal::displayInfo("\nMATERIAL FOUND\n");
+
+	MFnLambertShader lambert(node);
+
+	MString INFO = "NAME: ";
+	INFO += lambert.name();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("MATERIAL SHIT: \n");
+	INFO += lambert.ambientColor().r;
+	INFO += ", ";
+	INFO += lambert.ambientColor().g;
+	INFO += ", ";
+	INFO += lambert.ambientColor().b;
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Diffuse:");
+	INFO += lambert.color().r;
+	INFO += ", ";
+	INFO += lambert.color().g;
+	INFO += ", ";
+	INFO += lambert.color().b;
+	INFO += ", ";
+	INFO += lambert.diffuseCoeff();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Translucence:");
+	INFO += lambert.translucenceCoeff();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Transparency:");
+	INFO += lambert.transparency().r;
+	INFO += ", ";
+	INFO += lambert.transparency().g;
+	INFO += ", ";
+	INFO += lambert.transparency().b;
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Glow:");
+	INFO += lambert.glowIntensity();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	MGlobal::displayInfo("Incandescence:");
+	INFO += lambert.incandescence().r;
+	INFO += ", ";
+	INFO += lambert.incandescence().g;
+	INFO += ", ";
+	INFO += lambert.incandescence().b;
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+	if (isPhong)
+	{
+		MGlobal::displayInfo("AND IT HAS PHONG SHIT\n");
+		MFnPhongShader phong(node);
+
+		MGlobal::displayInfo("Spec:");
+		INFO += phong.specularColor().r;
+		INFO += ", ";
+		INFO += phong.specularColor().g;
+		INFO += ", ";
+		INFO += phong.specularColor().b;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		MGlobal::displayInfo("Shine:");
+		INFO += phong.cosPower();
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		MGlobal::displayInfo("Reflection color:");
+		INFO += phong.reflectedColor().r;
+		INFO += ", ";
+		INFO += phong.reflectedColor().g;
+		INFO += ", ";
+		INFO += phong.reflectedColor().b;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		MGlobal::displayInfo("Reflectivity:");
+		INFO += phong.reflectivity();
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+	}
+
+	MStatus res = getTextureFileInfo(node);
+
+	return true;
+}
+
 bool createMesh(MObject &node)
 {
 	//setAttr "pCubeShape1.quadSplit" 0;
@@ -1010,6 +1169,15 @@ EXPORT MStatus initializePlugin(MObject obj)
 			//MItMeshPolygon( const MObject & polyObject, MStatus * ReturnStatus = NULL );
 			//producer->push(trans.name().asChar(), trans.name().length());
 		}
+
+		MItDependencyNodes materialIt(MFn::kLambert, &res);
+		for (; !materialIt.isDone(); materialIt.next())
+		{
+			MFn::Type currentType = materialIt.thisNode().apiType();
+			createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
+
+		}
+
 		if (trans.child(0).hasFn(MFn::kCamera))
 		{
 			if (MFnTransform(meshIt.currentItem()).name() == "persp")
@@ -1044,7 +1212,8 @@ EXPORT MStatus initializePlugin(MObject obj)
 			if (MFAIL(bajs))
 				MGlobal::displayInfo("failed to connest");
 		} */
-	}	createViewportCamera();
+	}
+	createViewportCamera();
 	/*adding callback for time*/
 	MCallbackId newId = MTimerMessage::addTimerCallback(UPDATE_TIME, elapsedTimeFunction, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
