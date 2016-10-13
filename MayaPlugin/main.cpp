@@ -546,6 +546,49 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 #pragma endregion
 MStatus getTextureFileInfo(MObject &shaderNode)
 {
+	//MStatus res;
+	//MFnDependencyNode FnDep(shaderNode);
+
+	//MPlug attrib = FnDep.findPlug("color", &res);
+	//if (res == MS::kSuccess)
+	//{
+	//	MPlugArray plugArray;
+	//	bool ROVENIFINLAND = attrib.isConnected()
+	//	ROVENIFINLAND = attrib.isChild();
+
+	//	attrib.connectedTo(plugArray, true, false);
+	//	int bajs = plugArray.length();
+
+	//	if (plugArray.length() > 0)
+	//	{
+	//		MObject source = plugArray[0];
+
+	//		if (source.hasFn(MFn::kFileTexture))
+	//		{
+	//			MFnDependencyNode FnFile(source);
+	//			MPlug FileTexNamePlug = FnFile.findPlug("ftn", &res);
+	//			if (res == MS::kSuccess)
+	//			{
+	//				MString filePath;
+	//				FileTexNamePlug.getValue(filePath);
+
+	//				MGlobal::displayInfo(filePath);
+	//			}
+	//		}
+	//		else
+	//			MGlobal::displayInfo("no texture file defined for value");
+	//	}
+	//	
+
+	//}
+
+	//return res;
+
+
+
+
+
+
 	MStatus res;
 	MItDependencyGraph textureIt(shaderNode, MFn::kFileTexture, MItDependencyGraph::kUpstream,
 		MItDependencyGraph::kBreadthFirst, MItDependencyGraph::kNodeLevel, &res);
@@ -564,10 +607,9 @@ MStatus getTextureFileInfo(MObject &shaderNode)
 
 	for (; !textureIt.isDone(); textureIt.next())
 	{
-		MFn::Type currentType = textureIt.thisNode().apiType();
-		MGlobal::displayInfo("ROVEN");
-
 		MObject textureNode = textureIt.currentItem(&res);
+
+		
 		if (res != MS::kSuccess)
 		{
 			MGlobal::displayInfo("ERROR: Could not create MObject texture node\n");
@@ -580,17 +622,22 @@ MStatus getTextureFileInfo(MObject &shaderNode)
 			MGlobal::displayInfo("ERROR: Could not create FnTexture\n");
 			return res;
 		}
+		
 
-		MPlug attrib;
-		attrib = textureNodeFn.findPlug(MString("ftn"));
-		MString INFO = attrib.name();
+		MPlug ftp = textureNodeFn.findPlug(MString("ftn"));
+		MPlugArray connections;
 
-		MGlobal::displayInfo(INFO);
+		MString filePath;
+		ftp.getValue(filePath);
 
-
-
-
+		MGlobal::displayInfo(filePath);
+		
 	}
+
+
+
+
+
 }
 #pragma region Creation
 
@@ -1170,14 +1217,6 @@ EXPORT MStatus initializePlugin(MObject obj)
 			//producer->push(trans.name().asChar(), trans.name().length());
 		}
 
-		MItDependencyNodes materialIt(MFn::kLambert, &res);
-		for (; !materialIt.isDone(); materialIt.next())
-		{
-			MFn::Type currentType = materialIt.thisNode().apiType();
-			createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
-
-		}
-
 		if (trans.child(0).hasFn(MFn::kCamera))
 		{
 			if (MFnTransform(meshIt.currentItem()).name() == "persp")
@@ -1212,6 +1251,13 @@ EXPORT MStatus initializePlugin(MObject obj)
 			if (MFAIL(bajs))
 				MGlobal::displayInfo("failed to connest");
 		} */
+	}
+	MItDependencyNodes materialIt(MFn::kLambert, &res);
+	for (; !materialIt.isDone(); materialIt.next())
+	{
+		MFn::Type currentType = materialIt.thisNode().apiType();
+		createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
+
 	}
 	createViewportCamera();
 	/*adding callback for time*/
