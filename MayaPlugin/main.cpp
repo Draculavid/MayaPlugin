@@ -4,6 +4,7 @@
 #include <iostream>
 #include "CircularBuffer.h"//<-------------------------- fix this later so that it's a lib
 #include <queue>
+#include "Utils.h"
 
 using namespace std;
 #define UPDATE_TIME 0.5f
@@ -544,106 +545,83 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 //fix adde node funtion so that you just use a function that creates everything/adds callbakcs
 //add topology changed callback
 #pragma endregion
-MStatus getTextureFileInfo(MObject &shaderNode)
+bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path)
 {
-	//MStatus res;
-	//MFnDependencyNode FnDep(shaderNode);
-
-	//MPlug attrib = FnDep.findPlug("color", &res);
-	//if (res == MS::kSuccess)
-	//{
-	//	MPlugArray plugArray;
-	//	bool ROVENIFINLAND = attrib.isConnected()
-	//	ROVENIFINLAND = attrib.isChild();
-
-	//	attrib.connectedTo(plugArray, true, false);
-	//	int bajs = plugArray.length();
-
-	//	if (plugArray.length() > 0)
-	//	{
-	//		MObject source = plugArray[0];
-
-	//		if (source.hasFn(MFn::kFileTexture))
-	//		{
-	//			MFnDependencyNode FnFile(source);
-	//			MPlug FileTexNamePlug = FnFile.findPlug("ftn", &res);
-	//			if (res == MS::kSuccess)
-	//			{
-	//				MString filePath;
-	//				FileTexNamePlug.getValue(filePath);
-
-	//				MGlobal::displayInfo(filePath);
-	//			}
-	//		}
-	//		else
-	//			MGlobal::displayInfo("no texture file defined for value");
-	//	}
-	//	
-
-	//}
-
-	//return res;
-
-
-
-
-
-
 	MStatus res;
-	MItDependencyGraph textureIt(shaderNode, MFn::kFileTexture, MItDependencyGraph::kUpstream,
-		MItDependencyGraph::kBreadthFirst, MItDependencyGraph::kNodeLevel, &res);
+	MPlugArray plugArray;
+	MFnDependencyNode depNode(shaderNode, &res);
 
-	if (res != MS::kSuccess)
+	MPlug attrib = depNode.findPlug(type, &res);
+	bool connected = attrib.connectedTo(plugArray, true, false, &res);
+
+	if (res == MS::kSuccess && plugArray.length() > 0)
 	{
-		MGlobal::displayInfo("ERROR: Could not create texture iterator\n");
-		return res;
-	}
+		MObject source = plugArray[0].node();
+		MFn::Type DERPENSTEIN = source.apiType();
 
-	res = textureIt.disablePruningOnFilter();
-	if (res != MS::kSuccess)
-		MGlobal::displayInfo("ERROR: Could not disable pruning on filter\n");
-
-
-
-	for (; !textureIt.isDone(); textureIt.next())
-	{
-		MObject textureNode = textureIt.currentItem(&res);
-
-		
-		if (res != MS::kSuccess)
+		if (source.hasFn(MFn::kFileTexture))
 		{
-			MGlobal::displayInfo("ERROR: Could not create MObject texture node\n");
-			return res;
+			MFnDependencyNode FnFile(source);
+			MPlug FileTexNamePlug = FnFile.findPlug("ftn", &res);
+			if (res == MS::kSuccess)
+			{
+				FileTexNamePlug.getValue(path);
+				MGlobal::displayInfo(path);
+				return true;
+			}
 		}
-
-		MFnDependencyNode textureNodeFn(textureNode, &res);
-		if (res != MS::kSuccess)
+		else if (source.hasFn(MFn::kBump))
 		{
-			MGlobal::displayInfo("ERROR: Could not create FnTexture\n");
-			return res;
+			MPlugArray bumpArray;
+			MFnDependencyNode FnBump(source);
+			
+			MPlug bumpValuePlug = FnBump.findPlug("bv", &res);
+			connected = bumpValuePlug.connectedTo(bumpArray, true, false, &res);
+			
+			if (res == MS::kSuccess && bumpArray.length() > 0)
+			{
+				MObject source = plugArray[0].node();
+				DERPENSTEIN = source.apiType();
+				if (source.hasFn(MFn::kFileTexture))
+				{
+					MFnDependencyNode FnFile(source);
+					MPlug FileTexNamePlug = FnFile.findPlug("ftn", &res);
+					if (res == MS::kSuccess)
+					{
+						FileTexNamePlug.getValue(path);
+						MGlobal::displayInfo(path);
+						return true;
+					}
+				}
+			}
 		}
-		
-
-		MPlug ftp = textureNodeFn.findPlug(MString("ftn"));
-		MPlugArray connections;
-
-		MString filePath;
-		ftp.getValue(filePath);
-
-		MGlobal::displayInfo(filePath);
-		
+		else
+		{
+			path = "";
+			return false; //not using a texture
+		}
 	}
-
-
-
-
-
+	return false;
 }
-#pragma region Creation
+
+	
 
 #pragma region Creation
 bool createMaterial(MObject &node, bool isPhong)
 {
+	MStatus res;
+
+	MString paths[tex::TEXTURE_TYPE_COUNT];
+	MainHeader mainHeader;
+	mainHeader.type = 3;
+
+
+	CreateMaterial mHeader;
+	ambient amb;
+	diffuse diff;
+	specular spec;
+
+
 	MGlobal::displayInfo("\nMATERIAL FOUND\n");
 
 	MFnLambertShader lambert(node);
@@ -654,99 +632,145 @@ bool createMaterial(MObject &node, bool isPhong)
 	MGlobal::displayInfo(INFO);
 	INFO = "";
 
-	MGlobal::displayInfo("MATERIAL SHIT: \n");
-	INFO += lambert.ambientColor().r;
-	INFO += ", ";
-	INFO += lambert.ambientColor().g;
-	INFO += ", ";
-	INFO += lambert.ambientColor().b;
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-	MGlobal::displayInfo("Diffuse:");
-	INFO += lambert.color().r;
-	INFO += ", ";
-	INFO += lambert.color().g;
-	INFO += ", ";
-	INFO += lambert.color().b;
-	INFO += ", ";
-	INFO += lambert.diffuseCoeff();
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-	MGlobal::displayInfo("Translucence:");
-	INFO += lambert.translucenceCoeff();
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-	MGlobal::displayInfo("Transparency:");
-	INFO += lambert.transparency().r;
-	INFO += ", ";
-	INFO += lambert.transparency().g;
-	INFO += ", ";
-	INFO += lambert.transparency().b;
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-	MGlobal::displayInfo("Glow:");
-	INFO += lambert.glowIntensity();
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-	MGlobal::displayInfo("Incandescence:");
-	INFO += lambert.incandescence().r;
-	INFO += ", ";
-	INFO += lambert.incandescence().g;
-	INFO += ", ";
-	INFO += lambert.incandescence().b;
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-	if (isPhong)
+	if (getTextureFileInfo(node, tex::textureTypes[tex::NORMAL], paths[tex::NORMAL]))
 	{
-		MGlobal::displayInfo("AND IT HAS PHONG SHIT\n");
-		MFnPhongShader phong(node);
-
-		MGlobal::displayInfo("Spec:");
-		INFO += phong.specularColor().r;
-		INFO += ", ";
-		INFO += phong.specularColor().g;
-		INFO += ", ";
-		INFO += phong.specularColor().b;
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
-
-		MGlobal::displayInfo("Shine:");
-		INFO += phong.cosPower();
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
-
-		MGlobal::displayInfo("Reflection color:");
-		INFO += phong.reflectedColor().r;
-		INFO += ", ";
-		INFO += phong.reflectedColor().g;
-		INFO += ", ";
-		INFO += phong.reflectedColor().b;
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
-
-		MGlobal::displayInfo("Reflectivity:");
-		INFO += phong.reflectivity();
+		mHeader.normalPathLength = paths[tex::NORMAL].length();
+		MString INFO = "Normal: ";
+		INFO += paths[tex::NORMAL];
 		INFO += "\n";
 		MGlobal::displayInfo(INFO);
 		INFO = "";
 	}
 
-	MStatus res = getTextureFileInfo(node);
+	MGlobal::displayInfo("Ambient: ");
+	if(!getTextureFileInfo(node, tex::textureTypes[tex::AMBIENT], paths[tex::AMBIENT]))
+	{
+		mHeader.ambientPathLength = paths[tex::AMBIENT].length();
+
+		lambert.ambientColor().get((float*)&amb);
+		INFO += amb.r;
+		INFO += ", ";
+		INFO += amb.g;
+		INFO += ", ";
+		INFO += amb.b;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+	}
+
+	MGlobal::displayInfo("Diffuse:");
+	if (!getTextureFileInfo(node, tex::textureTypes[tex::DIFFUSE], paths[tex::DIFFUSE]))
+	{
+		mHeader.texturePathLength = paths[tex::DIFFUSE].length();
+
+		lambert.color().get((float*)&diff);
+		INFO += diff.r;
+		INFO += ", ";
+		INFO += diff.g;
+		INFO += ", ";
+		INFO += diff.b;
+		INFO += ", ";
+	}
+	diff.coeff = lambert.diffuseCoeff();
+	INFO += "diffuse coefficient : ";
+	INFO += diff.coeff;
+	INFO += ", ";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+
+	if (isPhong)
+	{
+		MGlobal::displayInfo("AND IT HAS PHONG SHIT\n");
+		MFnPhongShader phong(node);
+		
+		MGlobal::displayInfo("Spec:");
+		if (!getTextureFileInfo(node, tex::textureTypes[tex::SPECULAR], paths[tex::SPECULAR]))
+		{
+			mHeader.specularPathlength = paths[tex::SPECULAR].length();
+
+			phong.specularColor().get((float*)&spec);
+			INFO += spec.r;
+			INFO += ", ";
+			INFO += spec.g;
+			INFO += ", ";
+			INFO += spec.b;
+			INFO += "\n";
+			MGlobal::displayInfo(INFO);
+			INFO = "";
+		}
+		spec.shine = phong.cosPower();
+		MGlobal::displayInfo("Shine:");
+		INFO += spec.shine;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		//MGlobal::displayInfo("Reflection color:");
+		//INFO += phong.reflectedColor().r;
+		//INFO += ", ";
+		//INFO += phong.reflectedColor().g;
+		//INFO += ", ";
+		//INFO += phong.reflectedColor().b;
+		//INFO += "\n";
+		//MGlobal::displayInfo(INFO);
+		//INFO = "";
+
+		//MGlobal::displayInfo("Reflectivity:");
+		//INFO += phong.reflectivity();
+		//INFO += "\n";
+		//MGlobal::displayInfo(INFO);
+		//INFO = "";
+	}
+
+	//MGlobal::displayInfo("Translucence:");
+	//INFO += lambert.translucenceCoeff();
+	//INFO += "\n";
+	//MGlobal::displayInfo(INFO);
+	//INFO = "";
+
+	//if (!getTextureFileInfo(node, tex::textureTypes[tex::TRANSPARENCY]));
+	//{
+	//	MGlobal::displayInfo("Transparency:");
+	//	INFO += lambert.transparency().r;
+	//	INFO += ", ";
+	//	INFO += lambert.transparency().g;
+	//	INFO += ", ";
+	//	INFO += lambert.transparency().b;
+	//	INFO += "\n";
+	//	MGlobal::displayInfo(INFO);
+	//	INFO = "";
+	//}
+
+	//MGlobal::displayInfo("Glow:");
+	//INFO += lambert.glowIntensity();
+	//INFO += "\n";
+	//MGlobal::displayInfo(INFO);
+	//INFO = "";
+
+	//if (!getTextureFileInfo(node, tex::textureTypes[tex::INCANDESCENCE]));
+	//{
+	//	MGlobal::displayInfo("Incandescence:");
+	//	INFO += lambert.incandescence().r;
+	//	INFO += ", ";
+	//	INFO += lambert.incandescence().g;
+	//	INFO += ", ";
+	//	INFO += lambert.incandescence().b;
+	//	INFO += "\n";
+	//	MGlobal::displayInfo(INFO);
+	//	INFO = "";
+	//} 
+
+
+	//MEMCOPY DIS WOOOOO
+	
+	char * pek = msg;
+
+	memcpy(pek, (char*)&mainHeader, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
+
+	memcpy(pek, (char*)&mHeader, sizeof(CreateMaterial));
+	pek += sizeof(CreateMaterial);
 
 	return true;
 }

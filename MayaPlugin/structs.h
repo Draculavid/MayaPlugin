@@ -61,9 +61,12 @@ struct Vector4
 	float x, y, z, w;
 };
 #pragma region MaterialStructs
-struct createMaterial
+struct CreateMaterial
 {
 	unsigned int texturePathLength;
+	unsigned int normalPathLength;
+	unsigned int ambientPathLength;
+	unsigned int specularPathlength;
 	unsigned int nameLength;
 };
 struct ambient
