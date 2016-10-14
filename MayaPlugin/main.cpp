@@ -534,78 +534,188 @@ bool updateCamera()
 
 void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
+	MSelectionList sList;
+	MGlobal::getActiveSelectionList(sList);
+	//MPlug tempPlug;
+	MItSelectionList iter(sList);
+	//iter.kPlugSelectionItem;
+	/*MObject hejsan;
+	sList.getDependNode(0, hejsan);
+	sList.getPlug(0, tempPlug);
+	hejsan = tempPlug.asMObject();*/
+
+	/*for (int i = 0; i < 1; iter.next())
+	{
+		MDagPath item;
+		MObject component;
+		iter.getDagPath(item, component);
+		i++;
+	}*/
+	//if (hejsan == plug.asMObject())
+		//MGlobal::displayInfo("bajs");
+	//MGlobal::displayInfo(plug.name());
+	//MGlobal::displayInfo(tempPlug.name());
+	/*if (Amsg & MNodeMessage::kAttributeSet && plug.isArray())
+	{
+		MObject mNode = plug.node();
+		MFnMesh mMesh = mNode;
+		MFnTransform mTran = mNode;
+		unsigned int hejsan = plug.evaluateNumElements();
+		MString info;
+		info += mTran.name();
+		info += ": ";
+		info += hejsan;
+		MGlobal::displayInfo(info);
+	}*/
+	//if (Amsg & MNodeMessage::kLast)
+		//MGlobal::displayInfo("knulla röv");
 	if (Amsg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
 	{
-		//plug.isCompound()
-		//MFnTransform(plug.attribute()).getTranslation(MSpace::kWorld, NULL).x;
-		//MString values;
-		Vector values;
-		//values.x = plug.child(0).asFloat();
-		//values.y = plug.child(1).asFloat();
-		//values.z = plug.child(2).asFloat();
-		//values += x; values += ", "; values += y; values += ", "; values += z;
-		//MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
-		modifyVertex sVert;
-		MObject mNode = plug.node();
-		//MFnTransform kiss = bajs;
-		//bajs = kiss.parent(0);
-		MFnMesh mMesh = mNode;
-		MIntArray offsetIdList, indexList;
-		mMesh.getTriangles(offsetIdList, indexList);
-		MString info;
-		for (int i = 0; i < indexList.length(); ++i)
-		{
-			info += indexList[i];
-			info += ", ";
-		}
-		MGlobal::displayInfo(info);
-		info = "";
-		mNode = mMesh.parent(0);
-		//plug.legicalIndex();
-		//MString knulla;
-		//plug.info()
-		//unsigned int plugIndex = plug.logicalIndex();
-		//plug.selectAncestorLogicalIndex(0, bajs);
-		MFnTransform mTran = mNode;
-		//bajs = kiss.parent(0);
-		//bajs = kiss.child(0);
-		info += mTran.name();
-		//MStringArray balle;
-		//knulla.split('.', balle);
-		sVert.indexLength = indexList.length();
-		sVert.nameLength = mTran.name().length();
-		MainHeader mHead{ 5 };
-		MPoint tempPos;
-		mMesh.getPoint(plug.logicalIndex(), tempPos);
-		values = tempPos;
-		sendVertex vertInfo{ plug.logicalIndex() , values };
+		//MString info;
+		//info = MGlobal::executePythonCommandStringResult("filterExpand -sm 31");
+		//MGlobal::displayInfo(info);
 		
+			//MString info;
+			MDagPath item;
+			MObject component;
+			//MPlug kiss;
+			
+			iter.getDagPath(item, component);
+			//MDataHandle terrra = plug.asMDataHandle();
+			//info += item.fullPathName();
+			iter.getDagPath(item);
 
-		char*pek = msg;
-		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-		pek += sizeof(MainHeader);
+			MObject mNode = plug.node();
+			MFnMesh mMesh = mNode;
+			MPoint cPoint;
+			mMesh.getPoint(plug.logicalIndex(), cPoint);
+			MItMeshVertex mIt(item, component);
+			MPoint selVert; 
+			selVert = mIt.position();
+			if (cPoint == selVert)
+			{
+				MainHeader mHead{ 5 };
+				MIntArray offsetIdList, indexList;
+				mMesh.getTriangles(offsetIdList, indexList);
+				MFnTransform mTran = mMesh.parent(0);
+				modifyVertex mVert{ mTran.name().length(), mIt.count(), indexList.length() };
+				//int bajs = mIt.count();
+				//int sugrov = mIt.index();
+				char * pek = msg;
+				size_t length = 0;
 
-		memcpy(pek, (char*)&sVert, sizeof(modifyVertex));
-		pek += sizeof(modifyVertex);
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+				length += sizeof(MainHeader);
 
-		memcpy(pek, mTran.name().asChar(), sVert.nameLength);
-		pek += sVert.nameLength;
-		
-		memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sVert.indexLength));
-		pek += sizeof(Index)*sVert.indexLength;
+				memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
+				pek += sizeof(modifyVertex);
+				length += sizeof(modifyVertex);
 
-		memcpy(pek, (char*)&vertInfo, sizeof(sendVertex));
+				memcpy(pek, mTran.name().asChar(), mVert.nameLength);
+				pek += mVert.nameLength;
+				length += mVert.nameLength;
 
-		MGlobal::displayInfo(info);
-		size_t length =
-			sizeof(MainHeader) +
-			sizeof(modifyVertex) +
-			sVert.nameLength +
-			sizeof(Index)*sVert.indexLength +
-			sizeof(sendVertex);
+				memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
+				pek += sizeof(Index)*mVert.indexLength;
+				length += sizeof(Index)*mVert.indexLength;
+
+				sendVertex tempSendVert;
+				for (; !mIt.isDone(); mIt.next())
+				{
+					tempSendVert.id = mIt.index();
+					tempSendVert.translation = mIt.position();
+					//sendVertex vertInfo{ mIt.index() , mIt.position()};
+
+					memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+					pek += sizeof(sendVertex);
+					length += sizeof(sendVertex);
+				}
+
+				MGlobal::displayInfo("done!");
+				producer->push(msg, length);
+			}
+			//MPlug kuken = plug.parent();
+			//component = kuken.asMObject();
+			//component == terrra;
+			//if (kiss == )
+			//info += cPoint.className();
+			//MPoint * balle = component;
+				//MGlobal::displayInfo("bajs");
+
+			//MGlobal::displayInfo(info);
+			//i++;
+		//MGlobal::displayInfo(plug.name());
+		////plug.isCompound()
+		////MFnTransform(plug.attribute()).getTranslation(MSpace::kWorld, NULL).x;
+		////MString values;
+		//Vector values;
+		////values.x = plug.child(0).asFloat();
+		////values.y = plug.child(1).asFloat();
+		////values.z = plug.child(2).asFloat();
+		////values += x; values += ", "; values += y; values += ", "; values += z;
+		////MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
+		//modifyVertex sVert;
+		//MObject mNode = plug.node();
+		////MFnTransform kiss = bajs;
+		////bajs = kiss.parent(0);
+		//MFnMesh mMesh = mNode;
+		//MIntArray offsetIdList, indexList;
+		//mMesh.getTriangles(offsetIdList, indexList);
+		//MString info;
+		//for (int i = 0; i < indexList.length(); ++i)
+		//{
+		//	info += indexList[i];
+		//	info += ", ";
+		//}
+		//MGlobal::displayInfo(info);
+		//info = "";
+		//mNode = mMesh.parent(0);
+		////plug.legicalIndex();
+		////MString knulla;
+		////plug.info()
+		////unsigned int plugIndex = plug.logicalIndex();
+		////plug.selectAncestorLogicalIndex(0, bajs);
+		//MFnTransform mTran = mNode;
+		////bajs = kiss.parent(0);
+		////bajs = kiss.child(0);
+		//info += mTran.name();
+		////MStringArray balle;
+		////knulla.split('.', balle);
+		//sVert.indexLength = indexList.length();
+		//sVert.nameLength = mTran.name().length();
+		//MainHeader mHead{ 5 };
+		//MPoint tempPos;
+		//mMesh.getPoint(plug.logicalIndex(), tempPos);
+		//values = tempPos;
+		//sendVertex vertInfo{ plug.logicalIndex() , values };
+		//
+
+		//char*pek = msg;
+		//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+		//pek += sizeof(MainHeader);
+
+		//memcpy(pek, (char*)&sVert, sizeof(modifyVertex));
+		//pek += sizeof(modifyVertex);
+
+		//memcpy(pek, mTran.name().asChar(), sVert.nameLength);
+		//pek += sVert.nameLength;
+		//
+		//memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sVert.indexLength));
+		//pek += sizeof(Index)*sVert.indexLength;
+
+		//memcpy(pek, (char*)&vertInfo, sizeof(sendVertex));
+
+		//MGlobal::displayInfo(info);
+		//size_t length =
+		//	sizeof(MainHeader) +
+		//	sizeof(modifyVertex) +
+		//	sVert.nameLength +
+		//	sizeof(Index)*sVert.indexLength +
+		//	sizeof(sendVertex);
 
 
-		producer->push(msg, length);
+		//producer->push(msg, length);
 
 		//modifyVertex sVert;
 

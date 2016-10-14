@@ -24,7 +24,7 @@ struct Transformation
 struct modifyVertex
 {
 	unsigned int nameLength;
-	//unsigned int nrOfVertices;
+	unsigned int nrOfVertices;
 	unsigned int indexLength;
 };
 struct CreateCamera

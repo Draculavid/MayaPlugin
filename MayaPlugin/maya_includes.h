@@ -30,6 +30,8 @@
 #include <maya/MItDependencyNodes.h>
 #include <maya/MFloatMatrix.h>
 #include <maya/MTimer.h>
+#include <maya/MItSelectionList.h>
+#include <maya/MItMeshVertex.h>
 
 // Wrappers
 #include <maya/MGlobal.h>
