@@ -540,9 +540,9 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 		//MFnTransform(plug.attribute()).getTranslation(MSpace::kWorld, NULL).x;
 		//MString values;
 		Vector values;
-		values.x = plug.child(0).asFloat();
-		values.y = plug.child(1).asFloat();
-		values.z = plug.child(2).asFloat();
+		//values.x = plug.child(0).asFloat();
+		//values.y = plug.child(1).asFloat();
+		//values.z = plug.child(2).asFloat();
 		//values += x; values += ", "; values += y; values += ", "; values += z;
 		//MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
 		modifyVertex sVert;
@@ -952,6 +952,28 @@ bool createViewportCamera()
 }
 #pragma endregion
 #pragma region Modified
+void nodeRemoved(MObject &node, void *data)
+{
+	MGlobal::displayInfo(MFnTransform(node).name() + " removed.");
+	MainHeader mHead{ 9 };
+	Index deleteInfo{ MFnTransform(node).name().length() };
+
+	char * pek = msg;
+	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
+
+	memcpy(pek, (char*)&deleteInfo, sizeof(Index));
+	pek += sizeof(Index);
+
+	memcpy(pek, MFnTransform(node).name().asChar(), deleteInfo.nr);
+
+	size_t length =
+		sizeof(MainHeader) +
+		sizeof(Index) +
+		deleteInfo.nr;
+
+	producer->push(msg, length);
+}
 void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 {
 	//model queue here!
@@ -1004,6 +1026,14 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 			else
 				MGlobal::displayInfo("failed to connect NameChangeFunction");
 		}
+		newId = MModelMessage::addNodeRemovedFromModelCallback(node, nodeRemoved, NULL, &Result);
+		if (Result == MS::kSuccess)
+		{
+			if (myCallbackArray.append(newId) == MS::kSuccess)
+				MGlobal::displayInfo("made connection to the removed node callback");
+		}
+		else
+			MGlobal::displayInfo("failed to connect removed shit");
 		if (trans.child(0).hasFn(MFn::kMesh))
 		{
 			newId = MNodeMessage::addAttributeChangedCallback(trans.child(0), attributeChanged, NULL, &Result);
@@ -1071,6 +1101,15 @@ EXPORT MStatus initializePlugin(MObject obj)
 				else
 					MGlobal::displayInfo("failed to connect NameChangeFunction");
 			}
+			
+			newId = MModelMessage::addNodeRemovedFromModelCallback(meshIt.currentItem(), nodeRemoved, NULL, &loopResults);
+			if (loopResults == MS::kSuccess)
+			{
+				if (myCallbackArray.append(newId) == MS::kSuccess)
+					MGlobal::displayInfo("made connection to the removed node callback");
+			}
+			else
+				MGlobal::displayInfo("failed to connect removed shit");
 		}
 		if (trans.child(0).hasFn(MFn::kMesh))
 		{
