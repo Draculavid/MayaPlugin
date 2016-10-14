@@ -152,11 +152,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\shared\shared\CircularBuffer.cpp" />
+    <ClCompile Include="CircularBuffer.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\shared\shared\CircularBuffer.h" />
+    <ClInclude Include="CircularBuffer.h" />
     <ClInclude Include="maya_includes.h" />
     <ClInclude Include="structs.h" />
   </ItemGroup>

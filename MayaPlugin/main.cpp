@@ -102,7 +102,6 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 		
 
 		 		//modifiedTime = 0; 
-		
 
 		 		//while (true) 
 		 		{
@@ -170,6 +169,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				Transformation mTransform{ trans.name().length() , 2 };
 		
 
+
 		 				/*this will vary*/
 		 		size_t length =
 		 		sizeof(MainHeader)
@@ -182,6 +182,16 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 		 		Vector sTran;
 				sTran = trans.getTranslation(MSpace::kTransform, NULL);
 		
+				MString info;
+				info += trans.name();
+				info += ": ";
+				info += sTran.x;
+				info += ", ";
+				info += sTran.y;
+				info += ", ";
+				info += sTran.z;
+				info += "\n";
+				MGlobal::displayInfo(info);
 
 		 		char * pek = msg;
 				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
@@ -522,18 +532,84 @@ bool updateCamera()
 	return true;
 }
 
-void attributeChanged(MNodeMessage::AttributeMessage msg, MPlug &plug, MPlug &otherPlug, void*clientData)
+void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
-	if (msg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
+	if (Amsg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
 	{
 		//plug.isCompound()
 		//MFnTransform(plug.attribute()).getTranslation(MSpace::kWorld, NULL).x;
-		MString values;
-		float x = plug.child(0).asFloat();
-		float y = plug.child(1).asFloat();
-		float z = plug.child(2).asFloat();
-		values += x; values += ", "; values += y; values += ", "; values += z;
-		MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
+		//MString values;
+		Vector values;
+		values.x = plug.child(0).asFloat();
+		values.y = plug.child(1).asFloat();
+		values.z = plug.child(2).asFloat();
+		//values += x; values += ", "; values += y; values += ", "; values += z;
+		//MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
+		modifyVertex sVert;
+		MObject mNode = plug.node();
+		//MFnTransform kiss = bajs;
+		//bajs = kiss.parent(0);
+		MFnMesh mMesh = mNode;
+		MIntArray offsetIdList, indexList;
+		mMesh.getTriangles(offsetIdList, indexList);
+		MString info;
+		for (int i = 0; i < indexList.length(); ++i)
+		{
+			info += indexList[i];
+			info += ", ";
+		}
+		MGlobal::displayInfo(info);
+		info = "";
+		mNode = mMesh.parent(0);
+		//plug.legicalIndex();
+		//MString knulla;
+		//plug.info()
+		//unsigned int plugIndex = plug.logicalIndex();
+		//plug.selectAncestorLogicalIndex(0, bajs);
+		MFnTransform mTran = mNode;
+		//bajs = kiss.parent(0);
+		//bajs = kiss.child(0);
+		info += mTran.name();
+		//MStringArray balle;
+		//knulla.split('.', balle);
+		sVert.indexLength = indexList.length();
+		sVert.nameLength = mTran.name().length();
+		MainHeader mHead{ 5 };
+		MPoint tempPos;
+		mMesh.getPoint(plug.logicalIndex(), tempPos);
+		values = tempPos;
+		sendVertex vertInfo{ plug.logicalIndex() , values };
+		
+
+		char*pek = msg;
+		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+		pek += sizeof(MainHeader);
+
+		memcpy(pek, (char*)&sVert, sizeof(modifyVertex));
+		pek += sizeof(modifyVertex);
+
+		memcpy(pek, mTran.name().asChar(), sVert.nameLength);
+		pek += sVert.nameLength;
+		
+		memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sVert.indexLength));
+		pek += sizeof(Index)*sVert.indexLength;
+
+		memcpy(pek, (char*)&vertInfo, sizeof(sendVertex));
+
+		MGlobal::displayInfo(info);
+		size_t length =
+			sizeof(MainHeader) +
+			sizeof(modifyVertex) +
+			sVert.nameLength +
+			sizeof(Index)*sVert.indexLength +
+			sizeof(sendVertex);
+
+
+		producer->push(msg, length);
+
+		//modifyVertex sVert;
+
+
 	}
 }
 
@@ -940,6 +1016,7 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 				MGlobal::displayInfo("failed to connect attributes");
 			if (!createMesh(node))
 			{
+				MGlobal::displayInfo(MFnTransform(node).name() + "sent to the queue");
 				appendQueue(node);
 			}
 		}

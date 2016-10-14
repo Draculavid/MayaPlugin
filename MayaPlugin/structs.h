@@ -21,6 +21,12 @@ struct Transformation
 	unsigned int nameLength;
 	unsigned int modified;
 };
+struct modifyVertex
+{
+	unsigned int nameLength;
+	//unsigned int nrOfVertices;
+	unsigned int indexLength;
+};
 struct CreateCamera
 {
 	unsigned int nameLength;
@@ -55,6 +61,11 @@ struct Vector
 		z = (float)other.z;
 		return *this;
 	}
+};
+struct sendVertex
+{
+	unsigned int id;
+	Vector translation;
 };
 struct Vector4
 {
