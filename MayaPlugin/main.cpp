@@ -763,7 +763,7 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 //fix adde node funtion so that you just use a function that creates everything/adds callbakcs
 //add topology changed callback
 #pragma endregion
-bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path)
+bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path) //takes a material node, and a type which specifies plugtype (f.ex.: "normalCamera") for wanted texture, returns in &path
 {
 	MStatus res;
 	MPlugArray plugArray;
@@ -788,7 +788,6 @@ bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path)
 			}
 		}
 
-
 		MItDependencyGraph dgIt(source,
 			MFn::kFileTexture,
 			MItDependencyGraph::kUpstream,
@@ -810,43 +809,6 @@ bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path)
 				return true;
 			}
 		}
-
-		/*if (source.hasFn(MFn::kFileTexture))
-		{
-			MFnDependencyNode FnFile(source);
-			MPlug FileTexNamePlug = FnFile.findPlug("ftn", &res);
-			if (res == MS::kSuccess)
-			{
-				FileTexNamePlug.getValue(path);
-				MGlobal::displayInfo(path);
-				return true;
-			}
-		}
-		else if (source.hasFn(MFn::kBump))
-		{
-			MPlugArray bumpArray;
-			MFnDependencyNode FnBump(source);
-
-			MPlug bumpValuePlug = FnBump.findPlug("bv", &res);
-			connected = bumpValuePlug.connectedTo(bumpArray, true, false, &res);
-
-			if (res == MS::kSuccess && bumpArray.length() > 0)
-			{
-				MObject source = plugArray[0].node();
-				DERPENSTEIN = source.apiType();
-				if (source.hasFn(MFn::kFileTexture))
-				{
-					MFnDependencyNode FnFile(source);
-					MPlug FileTexNamePlug = FnFile.findPlug("ftn", &res);
-					if (res == MS::kSuccess)
-					{
-						FileTexNamePlug.getValue(path);
-						MGlobal::displayInfo(path);
-						return true;
-					}
-				}
-			}
-		}*/
 	}
 	else
 	{
@@ -1041,13 +1003,16 @@ bool createMaterial(MObject &node, bool isPhong)
 	memcpy(pek, (char*)&mHeader, sizeof(CreateMaterial));
 	pek += sizeof(CreateMaterial);
 
-	//THIS MIGHT WORK IF DATA IS STRUCTURED THE WAY IT SHOULD BE...
+
+	//THIS MIGHT WORK IF MSTRING DATA IS STRUCTURED THE WAY IT OUGHT TO BE... MEN SÅ KUL SKULLE VI VISST INTE HA
+	//char * tetas[256];
 	//int nameChunk = (mHeader.nameLength
 	//	+ mHeader.texturePathLength
 	//	+ mHeader.normalPathLength
 	//	+ mHeader.ambientPathLength
 	//	+ mHeader.specularPathlength);
 	//memcpy(pek, (char*)materialName.asChar(), nameChunk);
+	//*tetas = (pek + mHeader.nameLength);
 	//pek += nameChunk;
 
 
