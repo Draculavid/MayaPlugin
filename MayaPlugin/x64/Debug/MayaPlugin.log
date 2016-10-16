@@ -1,28 +1,16 @@
 ﻿  main.cpp
-<<<<<<< HEAD
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(476): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(477): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(478): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(479): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1053): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1054): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1055): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1056): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1118): warning C4018: '<': signed/unsigned mismatch
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1291): warning C4390: ';': empty controlled statement found; is this the intent?
-  MayaPlugin.vcxproj -> C:\Users\BTH\Desktop\MayaPlugin\x64\Debug\MayaPlugin.mll
-=======
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(514): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(515): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(516): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(517): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(633): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1041): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1042): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1043): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1044): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1101): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1128): warning C4018: '<': signed/unsigned mismatch
-\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1310): warning C4390: ';': empty controlled statement found; is this the intent?
-  MayaPlugin.vcxproj -> \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
->>>>>>> bajs
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(515): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(516): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(517): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(518): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(634): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1309): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1310): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1311): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1312): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1369): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1396): warning C4018: '<': signed/unsigned mismatch
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1587): warning C4390: ';': empty controlled statement found; is this the intent?
+     Creating library C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.lib and object C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.exp
+  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
+  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.pdb (Full PDB)

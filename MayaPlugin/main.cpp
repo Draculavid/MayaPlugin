@@ -775,9 +775,43 @@ bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path)
 	if (res == MS::kSuccess && plugArray.length() > 0)
 	{
 		MObject source = plugArray[0].node();
-		MFn::Type DERPENSTEIN = source.apiType();
 
-		if (source.hasFn(MFn::kFileTexture))
+		MPlug FileTexNamePlug;
+
+		if (source.apiType() == MFn::kFileTexture)
+		{
+			FileTexNamePlug = MFnDependencyNode(source).findPlug("ftn", &res);
+			if (res == MS::kSuccess)
+			{
+				FileTexNamePlug.getValue(path);
+				return true;
+			}
+		}
+
+
+		MItDependencyGraph dgIt(source,
+			MFn::kFileTexture,
+			MItDependencyGraph::kUpstream,
+			MItDependencyGraph::kBreadthFirst,
+			MItDependencyGraph::kNodeLevel);
+
+		dgIt.disablePruningOnFilter();
+		MFnDependencyNode dgNodeFnSet;
+
+		for (; !dgIt.isDone(); dgIt.next()) {
+
+			MObject thisNode = dgIt.thisNode();
+			dgNodeFnSet.setObject(thisNode);
+
+			MPlug FileTexNamePlug = dgNodeFnSet.findPlug("ftn", &res);
+			if (res == MS::kSuccess)
+			{
+				FileTexNamePlug.getValue(path);
+				return true;
+			}
+		}
+
+		/*if (source.hasFn(MFn::kFileTexture))
 		{
 			MFnDependencyNode FnFile(source);
 			MPlug FileTexNamePlug = FnFile.findPlug("ftn", &res);
@@ -792,10 +826,10 @@ bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path)
 		{
 			MPlugArray bumpArray;
 			MFnDependencyNode FnBump(source);
-			
+
 			MPlug bumpValuePlug = FnBump.findPlug("bv", &res);
 			connected = bumpValuePlug.connectedTo(bumpArray, true, false, &res);
-			
+
 			if (res == MS::kSuccess && bumpArray.length() > 0)
 			{
 				MObject source = plugArray[0].node();
@@ -812,13 +846,14 @@ bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path)
 					}
 				}
 			}
-		}
-		else
-		{
-			path = "";
-			return false; //not using a texture
-		}
+		}*/
 	}
+	else
+	{
+		path = "";
+		return false; //not using a texture
+	}
+	
 	return false;
 }
 
@@ -861,7 +896,7 @@ bool createMaterial(MObject &node, bool isPhong)
 	}
 
 	MGlobal::displayInfo("Ambient: ");
-	if(!getTextureFileInfo(node, tex::textureTypes[tex::AMBIENT], paths[tex::AMBIENT]))
+	if (!getTextureFileInfo(node, tex::textureTypes[tex::AMBIENT], paths[tex::AMBIENT]))
 	{
 		mHeader.ambientPathLength = paths[tex::AMBIENT].length();
 
@@ -876,7 +911,7 @@ bool createMaterial(MObject &node, bool isPhong)
 		INFO = "";
 	}
 
-	MGlobal::displayInfo("Diffuse:");
+	MGlobal::displayInfo("Diffuse: \n");
 	if (!getTextureFileInfo(node, tex::textureTypes[tex::DIFFUSE], paths[tex::DIFFUSE]))
 	{
 		mHeader.texturePathLength = paths[tex::DIFFUSE].length();
@@ -889,6 +924,9 @@ bool createMaterial(MObject &node, bool isPhong)
 		INFO += diff.b;
 		INFO += ", ";
 	}
+	INFO += "Color: ";
+	INFO += paths[tex::DIFFUSE];
+	INFO += "\n";
 	diff.coeff = lambert.diffuseCoeff();
 	INFO += "diffuse coefficient : ";
 	INFO += diff.coeff;
