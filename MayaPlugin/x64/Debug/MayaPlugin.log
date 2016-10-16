@@ -4,12 +4,11 @@ c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\ma
 c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(517): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(518): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(634): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1371): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1372): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1373): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1374): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1431): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1458): warning C4018: '<': signed/unsigned mismatch
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1649): warning C4390: ';': empty controlled statement found; is this the intent?
-  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
-  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.pdb (Full PDB)
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1375): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1376): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1377): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1434): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1461): warning C4018: '<': signed/unsigned mismatch
+c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1652): warning C4390: ';': empty controlled statement found; is this the intent?
+LINK : fatal error LNK1168: cannot open C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll for writing

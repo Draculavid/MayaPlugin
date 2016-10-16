@@ -900,7 +900,7 @@ bool createMaterial(MObject &node, bool isPhong)
 	MGlobal::displayInfo("Ambient: ");
 	if (!getTextureFileInfo(node, tex::textureTypes[tex::AMBIENT], paths[tex::AMBIENT]))
 	{
-		mHeader.ambientPathLength = paths[tex::AMBIENT].length();
+		
 
 		lambert.ambientColor().get((float*)&amb);
 		INFO += amb.r;
@@ -912,12 +912,11 @@ bool createMaterial(MObject &node, bool isPhong)
 		MGlobal::displayInfo(INFO);
 		INFO = "";
 	}
+	mHeader.ambientPathLength = paths[tex::AMBIENT].length();
 
 	MGlobal::displayInfo("Diffuse: \n");
 	if (!getTextureFileInfo(node, tex::textureTypes[tex::DIFFUSE], paths[tex::DIFFUSE]))
 	{
-		mHeader.texturePathLength = paths[tex::DIFFUSE].length();
-
 		lambert.color().get((float*)&diff);
 		INFO += diff.r;
 		INFO += ", ";
@@ -926,6 +925,7 @@ bool createMaterial(MObject &node, bool isPhong)
 		INFO += diff.b;
 		INFO += ", ";
 	}
+	mHeader.texturePathLength = paths[tex::DIFFUSE].length();
 	INFO += "Color: ";
 	INFO += paths[tex::DIFFUSE];
 	INFO += "\n";
@@ -957,6 +957,7 @@ bool createMaterial(MObject &node, bool isPhong)
 			MGlobal::displayInfo(INFO);
 			INFO = "";
 		}
+		mHeader.specularPathlength = paths[tex::SPECULAR].length();
 		spec.shine = phong.cosPower();
 		MGlobal::displayInfo("Shine:");
 		INFO += spec.shine;
@@ -1073,6 +1074,8 @@ bool createMaterial(MObject &node, bool isPhong)
 
 	memcpy(pek, (char*)&spec, sizeof(specular));
 	pek += sizeof(specular);
+
+	
 
 	while (true)
 	{
