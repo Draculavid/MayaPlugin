@@ -10,15 +10,15 @@ namespace tex
 	enum textureType
 	{
 		DIFFUSE,
-		AMBIENT,
-		INCANDESCENCE,
 		NORMAL,
-		TRANSPARENCY,
+		AMBIENT,
 		SPECULAR,
+		INCANDESCENCE,
+		TRANSPARENCY,
 
 		TEXTURE_TYPE_COUNT
 	};
 
-	const MString textureTypes[TEXTURE_TYPE_COUNT] = { "color", "ambientColor", "incandescence", "normalCamera", "transparency", "specularColor" };
+	const MString textureTypes[TEXTURE_TYPE_COUNT] = { "color", "normalCamera", "ambientColor", "specularColor", "incandescence",  "transparency" };
 
 }

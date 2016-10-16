@@ -865,15 +865,15 @@ bool createMaterial(MObject &node, bool isPhong)
 	MStatus res;
 
 	MString paths[tex::TEXTURE_TYPE_COUNT];
-	MainHeader mainHeader;
-	mainHeader.type = 3;
+	MainHeader mainHeader{ 3 };
 
 
-	CreateMaterial mHeader;
+	unsigned int length;
+	CreateMaterial mHeader{ 0, 0, 0, 0, 0 };
 	ambient amb;
 	diffuse diff;
 	specular spec;
-
+	MString materialName;
 
 	MGlobal::displayInfo("\nMATERIAL FOUND\n");
 
@@ -884,6 +884,8 @@ bool createMaterial(MObject &node, bool isPhong)
 	INFO += "\n";
 	MGlobal::displayInfo(INFO);
 	INFO = "";
+
+	materialName = lambert.name();
 
 	if (getTextureFileInfo(node, tex::textureTypes[tex::NORMAL], paths[tex::NORMAL]))
 	{
@@ -1019,7 +1021,17 @@ bool createMaterial(MObject &node, bool isPhong)
 
 
 	//MEMCOPY DIS WOOOOO
-	
+	length = (sizeof(MainHeader)
+		+ sizeof(CreateMaterial)
+		+ mHeader.nameLength
+		+ mHeader.texturePathLength
+		+ mHeader.normalPathLength
+		+ mHeader.ambientPathLength
+		+ mHeader.specularPathlength
+		+ sizeof(ambient)
+		+ sizeof(diffuse)
+		+ sizeof(specular));
+
 	char * pek = msg;
 
 	memcpy(pek, (char*)&mainHeader, sizeof(MainHeader));
@@ -1027,6 +1039,56 @@ bool createMaterial(MObject &node, bool isPhong)
 
 	memcpy(pek, (char*)&mHeader, sizeof(CreateMaterial));
 	pek += sizeof(CreateMaterial);
+
+	//THIS MIGHT WORK IF DATA IS STRUCTURED THE WAY IT SHOULD BE...
+	//int nameChunk = (mHeader.nameLength
+	//	+ mHeader.texturePathLength
+	//	+ mHeader.normalPathLength
+	//	+ mHeader.ambientPathLength
+	//	+ mHeader.specularPathlength);
+	//memcpy(pek, (char*)materialName.asChar(), nameChunk);
+	//pek += nameChunk;
+
+
+	memcpy(pek, (char*)materialName.asChar(), mHeader.nameLength);
+	pek += mHeader.nameLength;
+
+	memcpy(pek, (char*)paths[tex::DIFFUSE].asChar(), mHeader.texturePathLength);
+	pek += mHeader.texturePathLength;
+
+	memcpy(pek, (char*)paths[tex::NORMAL].asChar(), mHeader.normalPathLength);
+	pek += mHeader.normalPathLength;
+
+	memcpy(pek, (char*)paths[tex::AMBIENT].asChar(), mHeader.ambientPathLength);
+	pek += mHeader.ambientPathLength;
+
+	memcpy(pek, (char*)paths[tex::SPECULAR].asChar(), mHeader.specularPathlength);
+	pek += mHeader.specularPathlength;
+
+	memcpy(pek, (char*)&amb, sizeof(ambient));
+	pek += sizeof(ambient);
+
+	memcpy(pek, (char*)&diff, sizeof(diffuse));
+	pek += sizeof(diffuse);
+
+	memcpy(pek, (char*)&spec, sizeof(specular));
+	pek += sizeof(specular);
+
+	while (true)
+	{
+		try
+		{
+			if (producer->push(msg, length))
+			{
+				MGlobal::displayInfo("Sent the mesh to the circular buffer");
+				break;
+			}
+		}
+		catch (...)
+		{
+			Sleep(1);
+		}
+	}
 
 	return true;
 }
