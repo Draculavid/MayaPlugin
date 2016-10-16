@@ -13,7 +13,7 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
-
+*.orig
 # Windows shortcuts
 *.lnk
 
@@ -52,3 +52,5 @@ MayaPlugin.VC.db
 *.db
 MayaPlugin/x64/Debug/vc140.idb
 *.pdb
+MayaPlugin/main.cpp.orig
+MayaPlugin/maya_includes.h.orig
