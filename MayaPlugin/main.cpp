@@ -41,400 +41,438 @@ bool appendQueue(MObject & node)
 	return false;
 }
 #pragma region callbacks
-void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
-{
-	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
-		cameraMovement = true;
-	 	//if (modifiedTime > UPDATE_TIME) //fix so it's only mesh 
-	{
-			/*	if (!transformNode.hasFn(MFn::kCamera))*/
-		//if (modified & MDagMessage::kTranslation) 
-		if (MFnTransform(transformNode).child(0).apiType() == MFn::kMesh)
-		{
-			//M3dView kiss; 
-			//kiss.active3dView().updateViewingParameters(); 
-			MFnTransform trans = transformNode;
-			MGlobal::displayInfo(trans.name() + " worldmatrix changed");
-			MainHeader mHead{ 4 };
-		
-
-				/*MDagMessage
-				60 			kScale         = kScaleX        | kScaleY        | kScaleZ,
-				61 			kRotation      = kRotateX       | kRotateY       | kRotateZ,
-				62 			kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
-		
-
-			if (modified & MDagMessage::kScale)
-			{
-				Transformation mTransform{ trans.name().length() , 0 };
-		
-
-		 				/*this will vary*/
-		 		size_t length =
-		 			sizeof(MainHeader)
-					+ sizeof(Transformation)
-					+ mTransform.nameLength
-					+ sizeof(Vector);
-		
-
-		 				/*this will also vary*/
-		 		Vector sScale; double tempScale[3];
-		
-
-		 		trans.getScale(tempScale);
-				sScale = tempScale;
-		
-
-		 		char * pek = msg;
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-				pek += sizeof(MainHeader);
-		
-
-		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-				pek += sizeof(Transformation);
-		
-
-		 		memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-				pek += mTransform.nameLength;
-		
-
-		 		memcpy(pek, (char*)&sScale, sizeof(Vector));
-				pek += sizeof(Vector);
-		
-
-		 		//modifiedTime = 0; 
-		
-
-		 		//while (true) 
-		 		{
-		 			//try 
-					{
-						if (producer->push(msg, length))
-							{
-								//break; 
-							}
-					}
-				//catch (...) 
-					{
-						//Sleep(1); 
-					}
-				}
-			}
-			else if (modified & MDagMessage::kRotation)
-			{
-				Transformation mTransform{ trans.name().length() , 1 };
-		
-
-		 		/*this will vary*/
-		 		size_t length =
-		 			sizeof(MainHeader)
-					+ sizeof(Transformation)
-					+ mTransform.nameLength
-					+ sizeof(Vector4);
-		
-
-		 		/*this will also vary*/
-		 		double tempRot[4]; Vector4 sRot;
-		
-
-		 		trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-				sRot.x = (float)tempRot[0];
-				sRot.y = (float)tempRot[1];
-				sRot.z = (float)tempRot[2];
-				sRot.w = (float)tempRot[3];
-		
-
-		 		char * pek = msg;
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-				pek += sizeof(MainHeader);
-		
-
-		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-				pek += sizeof(Transformation);
-		
-
-		 		memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-				pek += mTransform.nameLength;
-		
-
-		 		memcpy(pek, (char*)&sRot, sizeof(Vector4));
-				pek += sizeof(Vector);
-		
-
-		 		//modifiedTime = 0; 
-		
-
-		 		producer->push(msg, length);
-			}
-			else if (modified & MDagMessage::kTranslation)
-			{
-				Transformation mTransform{ trans.name().length() , 2 };
-		
-
-		 				/*this will vary*/
-		 		size_t length =
-		 		sizeof(MainHeader)
-				+ sizeof(Transformation)
-				+ mTransform.nameLength
-				+ sizeof(Vector);
-		
-
-		 		/*this will also vary*/
-		 		Vector sTran;
-				sTran = trans.getTranslation(MSpace::kTransform, NULL);
-		
-
-		 		char * pek = msg;
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-				pek += sizeof(MainHeader);
-		
-
-		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-				pek += sizeof(Transformation);
-		
-
-				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-				pek += mTransform.nameLength;
-		
-
-				memcpy(pek, (char*)&sTran, sizeof(Vector));
-				pek += sizeof(Vector);
-		
-
-				//modifiedTime = 0; 
-		
-
-				producer->push(msg, length);
-			}
-		}
-	}
-}
-
 //void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 //{
 //	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
 //		cameraMovement = true;
-//	//if (modifiedTime > UPDATE_TIME) //fix so it's only mesh
+//	 	//if (modifiedTime > UPDATE_TIME) //fix so it's only mesh 
 //	{
-//	/*	if (!transformNode.hasFn(MFn::kCamera))*/
-//		//if (modified & MDagMessage::kTranslation)
+//			/*	if (!transformNode.hasFn(MFn::kCamera))*/
+//		//if (modified & MDagMessage::kTranslation) 
 //		if (MFnTransform(transformNode).child(0).apiType() == MFn::kMesh)
 //		{
-//			//MString listName;
-//			MSelectionList sList;
-//			MGlobal::getActiveSelectionList(sList);
-//			MDagPath nodePath;
-//
-//			//MGlobal::displayInfo(listName);
-//			//MString info;
-//			
-//			
-//
-//			//M3dView kiss;
-//			//kiss.active3dView().updateViewingParameters();
+//			//M3dView kiss; 
+//			//kiss.active3dView().updateViewingParameters(); 
 //			MFnTransform trans = transformNode;
 //			MGlobal::displayInfo(trans.name() + " worldmatrix changed");
 //			MainHeader mHead{ 4 };
+//		
 //
-//			/*MDagMessage
-//			kScale         = kScaleX        | kScaleY        | kScaleZ,
-//			kRotation      = kRotateX       | kRotateY       | kRotateZ,
-//			kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
+//				/*MDagMessage
+//				60 			kScale         = kScaleX        | kScaleY        | kScaleZ,
+//				61 			kRotation      = kRotateX       | kRotateY       | kRotateZ,
+//				62 			kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
+//		
 //
 //			if (modified & MDagMessage::kScale)
 //			{
-//				char * pek = msg;
+//				Transformation mTransform{ trans.name().length() , 0 };
+//		
+//
+//		 				/*this will vary*/
+//		 		size_t length =
+//		 			sizeof(MainHeader)
+//					+ sizeof(Transformation)
+//					+ mTransform.nameLength
+//					+ sizeof(Vector);
+//		
+//
+//		 				/*this will also vary*/
+//		 		Vector sScale; double tempScale[3];
+//		
+//
+//		 		trans.getScale(tempScale);
+//				sScale = tempScale;
+//		
+//
+//		 		char * pek = msg;
 //				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 //				pek += sizeof(MainHeader);
+//		
 //
-//				Transformation mTransform{ sList.length() , 0 };
-//				size_t length = 0;
-//				unsigned int nameLength = 0;
-//
-//				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+//		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 //				pek += sizeof(Transformation);
+//		
 //
-//				Vector sScale; double tempScale[3];
+//		 		memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+//				pek += mTransform.nameLength;
+//		
 //
-//				trans.getScale(tempScale);
-//				sScale = tempScale;
-//
-//				memcpy(pek, (char*)&sScale, sizeof(Vector));
+//		 		memcpy(pek, (char*)&sScale, sizeof(Vector));
 //				pek += sizeof(Vector);
+//		
 //
-//				for (int i = 0; i < sList.length(); ++i)
-//				{
-//					sList.getDagPath(i, nodePath);
-//					nameLength = nodePath.partialPathName().length();
+//		 		//modifiedTime = 0; 
 //
-//					memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-//					pek += sizeof(unsigned int);
-//					length += sizeof(unsigned int);
-//
-//					memcpy(pek, nodePath.partialPathName().asChar(), nameLength);
-//					pek += nameLength;
-//					length += nameLength;
+//		 		//while (true) 
+//		 		{
+//		 			//try 
+//					{
+//						if (producer->push(msg, length))
+//							{
+//								//break; 
+//							}
+//					}
+//				//catch (...) 
+//					{
+//						//Sleep(1); 
+//					}
 //				}
-//
-//
-//				length += 
-//					sizeof(MainHeader)
-//					+ sizeof(Transformation)
-//					+ sizeof(Vector);
-//
-//				/*this will also vary*/
-//
-//				producer->push(msg, length);
-//				
 //			}
 //			else if (modified & MDagMessage::kRotation)
 //			{
-//				//Transformation mTransform{ trans.name().length() , 1 };
+//				Transformation mTransform{ trans.name().length() , 1 };
+//		
 //
-//				///*this will vary*/
-//				//size_t length =
-//				//	sizeof(MainHeader)
-//				//	+ sizeof(Transformation)
-//				//	+ mTransform.nameLength
-//				//	+ sizeof(Vector4);
-//				char * pek = msg;
-//				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-//				pek += sizeof(MainHeader);
+//		 		/*this will vary*/
+//		 		size_t length =
+//		 			sizeof(MainHeader)
+//					+ sizeof(Transformation)
+//					+ mTransform.nameLength
+//					+ sizeof(Vector4);
+//		
 //
-//				Transformation mTransform{ sList.length() , 1 };
-//				size_t length = 0;
-//				unsigned int nameLength = 0;
+//		 		/*this will also vary*/
+//		 		double tempRot[4]; Vector4 sRot;
+//		
 //
-//				memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-//				pek += sizeof(Transformation);
-//
-//				double tempRot[4]; Vector4 sRot;
-//
-//				trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+//		 		trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
 //				sRot.x = (float)tempRot[0];
 //				sRot.y = (float)tempRot[1];
 //				sRot.z = (float)tempRot[2];
 //				sRot.w = (float)tempRot[3];
+//		
 //
-//				memcpy(pek, (char*)&sRot, sizeof(Vector4));
+//		 		char * pek = msg;
+//				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+//				pek += sizeof(MainHeader);
+//		
+//
+//		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+//				pek += sizeof(Transformation);
+//		
+//
+//		 		memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+//				pek += mTransform.nameLength;
+//		
+//
+//		 		memcpy(pek, (char*)&sRot, sizeof(Vector4));
 //				pek += sizeof(Vector);
+//		
 //
-//				for (int i = 0; i < sList.length(); ++i)
-//				{
-//					sList.getDagPath(i, nodePath);
-//					nameLength = nodePath.partialPathName().length();
+//		 		//modifiedTime = 0; 
+//		
 //
-//					memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-//					pek += sizeof(unsigned int);
-//					length += sizeof(unsigned int);
-//
-//					memcpy(pek, nodePath.partialPathName().asChar(), nameLength);
-//					pek += nameLength;
-//					length += nameLength;
-//				}
-//
-//
-//				length +=
-//					sizeof(MainHeader)
-//					+ sizeof(Transformation)
-//					+ sizeof(Vector4);
-//				/*this will also vary*/
-//				//char * pek = msg;
-//				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-//				//pek += sizeof(MainHeader);
-//
-//				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-//				//pek += sizeof(Transformation);
-//
-//				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-//				//pek += mTransform.nameLength;
-//
-//
-//				//modifiedTime = 0;
-//
-//				producer->push(msg, length);
+//		 		producer->push(msg, length);
 //			}
 //			else if (modified & MDagMessage::kTranslation)
 //			{
-//				//Transformation mTransform{ trans.name().length() , 2 };
+//				Transformation mTransform{ trans.name().length() , 2 };
+//		
 //
-//				///*this will vary*/
-//				//size_t length =
-//				//	sizeof(MainHeader)
-//				//	+ sizeof(Transformation)
-//				//	+ mTransform.nameLength
-//				//	+ sizeof(Vector);
 //
-//				char * pek = msg;
-//				/*memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-//				pek += sizeof(MainHeader);*/
+//		 				/*this will vary*/
+//		 		size_t length =
+//		 		sizeof(MainHeader)
+//				+ sizeof(Transformation)
+//				+ mTransform.nameLength
+//				+ sizeof(Vector);
+//		
 //
-//				Transformation mTransform{ sList.length() , 2 };
-//				size_t length = 0;
-//				unsigned int nameLength = 0;
-//
-//				/*memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-//				pek += sizeof(Transformation);*/
-//
-//				Vector sTran;
+//		 		/*this will also vary*/
+//		 		Vector sTran;
 //				sTran = trans.getTranslation(MSpace::kTransform, NULL);
-//				
-//				/*memcpy(pek, (char*)&sTran, sizeof(Vector));
-//				pek += sizeof(Vector);*/
-//				MTransformationMatrix test = trans.transformation();
-//				MString kuken;
-//				for (int i = 0; i < sList.length(); ++i)
-//				{
-//					sList.getDagPath(i, nodePath);
-//					nameLength = nodePath.partialPathName().length();
+//		
+//				MString info;
+//				info += trans.name();
+//				info += ": ";
+//				info += sTran.x;
+//				info += ", ";
+//				info += sTran.y;
+//				info += ", ";
+//				info += sTran.z;
+//				info += "\n";
+//				MGlobal::displayInfo(info);
 //
-//					kuken += i;
-//					kuken += ": ";
-//					kuken += nodePath.partialPathName();
-//					kuken += ", trans: ";
-//					kuken += sTran.x;
-//					kuken += ", ";
-//					kuken += sTran.y;
-//					kuken += ", ";
-//					kuken += sTran.z;
-//					kuken += ", ";
-//					kuken += "\n";
+//		 		char * pek = msg;
+//				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+//				pek += sizeof(MainHeader);
+//		
 //
-//					/*memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-//					pek += sizeof(unsigned int);
-//					length += sizeof(unsigned int);
+//		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+//				pek += sizeof(Transformation);
+//		
 //
-//					memcpy(pek, nodePath.partialPathName().asChar(), nameLength);
-//					pek += nameLength;
-//					length += nameLength;*/
-//				}
-//				MGlobal::displayInfo(kuken);
+//				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+//				pek += mTransform.nameLength;
+//		
 //
-//				length +=
-//					sizeof(MainHeader)
-//					+ sizeof(Transformation)
-//					+ sizeof(Vector);
+//				memcpy(pek, (char*)&sTran, sizeof(Vector));
+//				pek += sizeof(Vector);
+//		
 //
-//				/*this will also vary*/
-//				//char * pek = msg;
-//				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-//				//pek += sizeof(MainHeader);
-//
-//				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-//				//pek += sizeof(Transformation);
-//
-//				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-//				//pek += mTransform.nameLength;
-//
-//
-//				//modifiedTime = 0;
+//				//modifiedTime = 0; 
+//		
 //
 //				producer->push(msg, length);
 //			}
 //		}
 //	}
-//	
 //}
+
+void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
+{
+	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
+		cameraMovement = true;
+	//if (modifiedTime > UPDATE_TIME) //fix so it's only mesh
+	{
+	/*	if (!transformNode.hasFn(MFn::kCamera))*/
+		//if (modified & MDagMessage::kTranslation)
+		if (MFnTransform(transformNode).child(0).apiType() == MFn::kMesh)
+		{
+			//MString listName;
+			MSelectionList sList;
+			MGlobal::getActiveSelectionList(sList);
+			MItSelectionList iter(sList);
+			MObject mNode;
+			iter.getDependNode(mNode);
+			//MDagPath nodePath;
+			if (mNode == transformNode)
+			{
+				//MGlobal::displayInfo(listName);
+				//MString info;
+
+
+
+				//M3dView kiss;
+				//kiss.active3dView().updateViewingParameters();
+
+				//MGlobal::displayInfo(trans.name() + " worldmatrix changed");
+				MainHeader mHead{ 4 };
+				/*MDagMessage
+				kScale         = kScaleX        | kScaleY        | kScaleZ,
+				kRotation      = kRotateX       | kRotateY       | kRotateZ,
+				kTranslation   = kTranslateX    | kTranslateY    | kTranslateZ,*/
+
+				if (modified & MDagMessage::kScale)
+				{
+					char * pek = msg;
+					memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+					pek += sizeof(MainHeader);
+
+					Transformation mTransform{ sList.length() , 0 };
+					size_t length = 0;
+					unsigned int nameLength = 0;
+
+					memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+					pek += sizeof(Transformation);
+
+
+
+					for (; !iter.isDone(); iter.next())
+					{
+
+						iter.getDependNode(mNode);
+						MFnTransform trans = mNode;
+						//MString ballefjong;
+						//ballefjong += trans.name();
+						//MGlobal::displayInfo(ballefjong);
+
+						//sList.getDagPath(i, nodePath);
+						nameLength = trans.name().length();
+
+						memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+						pek += sizeof(unsigned int);
+						length += sizeof(unsigned int);
+
+						memcpy(pek, trans.name().asChar(), nameLength);
+						pek += nameLength;
+						length += nameLength;
+
+
+						Vector sScale; double tempScale[3];
+
+						trans.getScale(tempScale);
+						sScale = tempScale;
+
+						memcpy(pek, (char*)&sScale, sizeof(Vector));
+						pek += sizeof(Vector);
+						length += sizeof(Vector);
+					}
+
+
+					length +=
+						sizeof(MainHeader)
+						+ sizeof(Transformation);
+					//+ sizeof(Vector);
+
+				/*this will also vary*/
+
+					producer->push(msg, length);
+
+				}
+				else if (modified & MDagMessage::kRotation)
+				{
+					//Transformation mTransform{ trans.name().length() , 1 };
+
+					///*this will vary*/
+					//size_t length =
+					//	sizeof(MainHeader)
+					//	+ sizeof(Transformation)
+					//	+ mTransform.nameLength
+					//	+ sizeof(Vector4);
+					char * pek = msg;
+					memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+					pek += sizeof(MainHeader);
+
+					Transformation mTransform{ sList.length() , 1 };
+					size_t length = 0;
+					unsigned int nameLength = 0;
+
+					memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+					pek += sizeof(Transformation);
+
+					//double tempRot[4]; Vector4 sRot;
+
+					////trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+					//sRot.x = (float)tempRot[0];
+					//sRot.y = (float)tempRot[1];
+					//sRot.z = (float)tempRot[2];
+					//sRot.w = (float)tempRot[3];
+
+					/*memcpy(pek, (char*)&sRot, sizeof(Vector4));
+					pek += sizeof(Vector);*/
+
+					for (; !iter.isDone(); iter.next())
+					{
+						//MObject mNode;
+						iter.getDependNode(mNode);
+						MFnTransform trans = mNode;
+
+						//sList.getDagPath(i, nodePath);
+						nameLength = trans.name().length();
+
+						memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+						pek += sizeof(unsigned int);
+						length += sizeof(unsigned int);
+
+						memcpy(pek, trans.name().asChar(), nameLength);
+						pek += nameLength;
+						length += nameLength;
+
+						double tempRot[4]; Vector4 sRot;
+
+						trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+						sRot.x = (float)tempRot[0];
+						sRot.y = (float)tempRot[1];
+						sRot.z = (float)tempRot[2];
+						sRot.w = (float)tempRot[3];
+
+						memcpy(pek, (char*)&sRot, sizeof(Vector4));
+						pek += sizeof(Vector4);
+						length += sizeof(Vector4);
+					}
+
+
+					length +=
+						sizeof(MainHeader)
+						+ sizeof(Transformation);
+					//+ sizeof(Vector4);
+				/*this will also vary*/
+				//char * pek = msg;
+				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				//pek += sizeof(MainHeader);
+
+				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				//pek += sizeof(Transformation);
+
+				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				//pek += mTransform.nameLength;
+
+
+				//modifiedTime = 0;
+
+					producer->push(msg, length);
+				}
+				else if (modified & MDagMessage::kTranslation)
+				{
+					//Transformation mTransform{ trans.name().length() , 2 };
+
+					///*this will vary*/
+					//size_t length =
+					//	sizeof(MainHeader)
+					//	+ sizeof(Transformation)
+					//	+ mTransform.nameLength
+					//	+ sizeof(Vector);
+
+					char * pek = msg;
+					memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+					pek += sizeof(MainHeader);
+
+					Transformation mTransform{ sList.length() , 2 };
+					size_t length = 0;
+					unsigned int nameLength = 0;
+
+					memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+					pek += sizeof(Transformation);
+
+
+
+					/*memcpy(pek, (char*)&sTran, sizeof(Vector));
+					pek += sizeof(Vector);*/
+					//MTransformationMatrix test = trans.transformation();
+					//MString kuken;
+					for (; !iter.isDone(); iter.next())
+					{
+						//MObject mNode;
+						iter.getDependNode(mNode);
+						MFnTransform trans = mNode;
+
+						nameLength = trans.name().length();
+
+						memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+						pek += sizeof(unsigned int);
+						length += sizeof(unsigned int);
+
+						memcpy(pek, trans.name().asChar(), nameLength);
+						pek += nameLength;
+						length += nameLength;
+
+						Vector sTran;
+						sTran = trans.getTranslation(MSpace::kTransform, NULL);
+
+						memcpy(pek, (char*)&sTran, sizeof(Vector));
+						pek += sizeof(Vector);
+						length += sizeof(Vector);
+					}
+					//MGlobal::displayInfo(kuken);
+
+					length +=
+						sizeof(MainHeader)
+						+ sizeof(Transformation);
+					//+ sizeof(Vector);
+
+				/*this will also vary*/
+				//char * pek = msg;
+				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				//pek += sizeof(MainHeader);
+
+				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				//pek += sizeof(Transformation);
+
+				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				//pek += mTransform.nameLength;
+
+
+				//modifiedTime = 0;
+
+					producer->push(msg, length);
+				}
+			}
+		}
+	}
+	
+}
 
 void preRenderCB(const MString& panelName, void * data)
 {
@@ -462,6 +500,7 @@ void preRenderCB(const MString& panelName, void * data)
 			sizeof(MainHeader)
 			+ sizeof(Transformation)
 			+ transform.name().length()
+			+ sizeof(unsigned int)
 			+ sizeof(Vector) * 2
 			+ sizeof(Vector4);
 
@@ -480,7 +519,7 @@ void preRenderCB(const MString& panelName, void * data)
 
 		sTrans = transform.getTranslation(MSpace::kTransform, NULL);
 		unsigned int nameLength = transform.name().length();
-		Transformation mTransform{ nameLength, 3 };
+		Transformation mTransform{ 1, 3 };
 
 		char * pek = msg;
 		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
@@ -488,6 +527,9 @@ void preRenderCB(const MString& panelName, void * data)
 
 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 		pek += sizeof(Transformation);
+
+		memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		pek += sizeof(unsigned int);
 
 		memcpy(pek, (char*)transform.name().asChar(), nameLength);
 		pek += nameLength;
@@ -523,18 +565,194 @@ bool updateCamera()
 	return true;
 }
 
-void attributeChanged(MNodeMessage::AttributeMessage msg, MPlug &plug, MPlug &otherPlug, void*clientData)
+void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
-	if (msg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
+	MSelectionList sList;
+	MGlobal::getActiveSelectionList(sList);
+	//MPlug tempPlug;
+	MItSelectionList iter(sList);
+	//iter.kPlugSelectionItem;
+	/*MObject hejsan;
+	sList.getDependNode(0, hejsan);
+	sList.getPlug(0, tempPlug);
+	hejsan = tempPlug.asMObject();*/
+
+	/*for (int i = 0; i < 1; iter.next())
 	{
-		//plug.isCompound()
-		//MFnTransform(plug.attribute()).getTranslation(MSpace::kWorld, NULL).x;
-		MString values;
-		float x = plug.child(0).asFloat();
-		float y = plug.child(1).asFloat();
-		float z = plug.child(2).asFloat();
-		values += x; values += ", "; values += y; values += ", "; values += z;
-		MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
+		MDagPath item;
+		MObject component;
+		iter.getDagPath(item, component);
+		i++;
+	}*/
+	//if (hejsan == plug.asMObject())
+		//MGlobal::displayInfo("bajs");
+	//MGlobal::displayInfo(plug.name());
+	//MGlobal::displayInfo(tempPlug.name());
+	/*if (Amsg & MNodeMessage::kAttributeSet && plug.isArray())
+	{
+		MObject mNode = plug.node();
+		MFnMesh mMesh = mNode;
+		MFnTransform mTran = mNode;
+		unsigned int hejsan = plug.evaluateNumElements();
+		MString info;
+		info += mTran.name();
+		info += ": ";
+		info += hejsan;
+		MGlobal::displayInfo(info);
+	}*/
+	//if (Amsg & MNodeMessage::kLast)
+		//MGlobal::displayInfo("knulla röv");
+	if (Amsg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
+	{
+		//MString info;
+		//info = MGlobal::executePythonCommandStringResult("filterExpand -sm 31");
+		//MGlobal::displayInfo(info);
+		
+			//MString info;
+			MDagPath item;
+			MObject component;
+			//MPlug kiss;
+			
+			iter.getDagPath(item, component);
+			//MDataHandle terrra = plug.asMDataHandle();
+			//info += item.fullPathName();
+			iter.getDagPath(item);
+
+			MObject mNode = plug.node();
+			MFnMesh mMesh = mNode;
+			MPoint cPoint;
+			mMesh.getPoint(plug.logicalIndex(), cPoint);
+			MItMeshVertex mIt(item, component);
+			MPoint selVert; 
+			selVert = mIt.position();
+			if (cPoint == selVert)
+			{
+				MainHeader mHead{ 5 };
+				MIntArray offsetIdList, indexList;
+				mMesh.getTriangles(offsetIdList, indexList);
+				MFnTransform mTran = mMesh.parent(0);
+				modifyVertex mVert{ mTran.name().length(), mIt.count(), indexList.length() };
+				//int bajs = mIt.count();
+				//int sugrov = mIt.index();
+				char * pek = msg;
+				size_t length = 0;
+
+				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				pek += sizeof(MainHeader);
+				length += sizeof(MainHeader);
+
+				memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
+				pek += sizeof(modifyVertex);
+				length += sizeof(modifyVertex);
+
+				memcpy(pek, mTran.name().asChar(), mVert.nameLength);
+				pek += mVert.nameLength;
+				length += mVert.nameLength;
+
+				memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
+				pek += sizeof(Index)*mVert.indexLength;
+				length += sizeof(Index)*mVert.indexLength;
+
+				sendVertex tempSendVert;
+				for (; !mIt.isDone(); mIt.next())
+				{
+					tempSendVert.id = mIt.index();
+					tempSendVert.translation = mIt.position();
+					//sendVertex vertInfo{ mIt.index() , mIt.position()};
+
+					memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+					pek += sizeof(sendVertex);
+					length += sizeof(sendVertex);
+				}
+
+				MGlobal::displayInfo("done!");
+				producer->push(msg, length);
+			}
+			//MPlug kuken = plug.parent();
+			//component = kuken.asMObject();
+			//component == terrra;
+			//if (kiss == )
+			//info += cPoint.className();
+			//MPoint * balle = component;
+				//MGlobal::displayInfo("bajs");
+
+			//MGlobal::displayInfo(info);
+			//i++;
+		//MGlobal::displayInfo(plug.name());
+		////plug.isCompound()
+		////MFnTransform(plug.attribute()).getTranslation(MSpace::kWorld, NULL).x;
+		////MString values;
+		//Vector values;
+		////values.x = plug.child(0).asFloat();
+		////values.y = plug.child(1).asFloat();
+		////values.z = plug.child(2).asFloat();
+		////values += x; values += ", "; values += y; values += ", "; values += z;
+		////MGlobal::displayInfo("attribute changed: " + plug.name() + "\nNew value: " + values);
+		//modifyVertex sVert;
+		//MObject mNode = plug.node();
+		////MFnTransform kiss = bajs;
+		////bajs = kiss.parent(0);
+		//MFnMesh mMesh = mNode;
+		//MIntArray offsetIdList, indexList;
+		//mMesh.getTriangles(offsetIdList, indexList);
+		//MString info;
+		//for (int i = 0; i < indexList.length(); ++i)
+		//{
+		//	info += indexList[i];
+		//	info += ", ";
+		//}
+		//MGlobal::displayInfo(info);
+		//info = "";
+		//mNode = mMesh.parent(0);
+		////plug.legicalIndex();
+		////MString knulla;
+		////plug.info()
+		////unsigned int plugIndex = plug.logicalIndex();
+		////plug.selectAncestorLogicalIndex(0, bajs);
+		//MFnTransform mTran = mNode;
+		////bajs = kiss.parent(0);
+		////bajs = kiss.child(0);
+		//info += mTran.name();
+		////MStringArray balle;
+		////knulla.split('.', balle);
+		//sVert.indexLength = indexList.length();
+		//sVert.nameLength = mTran.name().length();
+		//MainHeader mHead{ 5 };
+		//MPoint tempPos;
+		//mMesh.getPoint(plug.logicalIndex(), tempPos);
+		//values = tempPos;
+		//sendVertex vertInfo{ plug.logicalIndex() , values };
+		//
+
+		//char*pek = msg;
+		//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+		//pek += sizeof(MainHeader);
+
+		//memcpy(pek, (char*)&sVert, sizeof(modifyVertex));
+		//pek += sizeof(modifyVertex);
+
+		//memcpy(pek, mTran.name().asChar(), sVert.nameLength);
+		//pek += sVert.nameLength;
+		//
+		//memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sVert.indexLength));
+		//pek += sizeof(Index)*sVert.indexLength;
+
+		//memcpy(pek, (char*)&vertInfo, sizeof(sendVertex));
+
+		//MGlobal::displayInfo(info);
+		//size_t length =
+		//	sizeof(MainHeader) +
+		//	sizeof(modifyVertex) +
+		//	sVert.nameLength +
+		//	sizeof(Index)*sVert.indexLength +
+		//	sizeof(sendVertex);
+
+
+		//producer->push(msg, length);
+
+		//modifyVertex sVert;
+
+
 	}
 }
 
@@ -1106,6 +1324,28 @@ bool createViewportCamera()
 }
 #pragma endregion
 #pragma region Modified
+void nodeRemoved(MObject &node, void *data)
+{
+	MGlobal::displayInfo(MFnTransform(node).name() + " removed.");
+	MainHeader mHead{ 9 };
+	Index deleteInfo{ MFnTransform(node).name().length() };
+
+	char * pek = msg;
+	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
+
+	memcpy(pek, (char*)&deleteInfo, sizeof(Index));
+	pek += sizeof(Index);
+
+	memcpy(pek, MFnTransform(node).name().asChar(), deleteInfo.nr);
+
+	size_t length =
+		sizeof(MainHeader) +
+		sizeof(Index) +
+		deleteInfo.nr;
+
+	producer->push(msg, length);
+}
 void elapsedTimeFunction(float elapsedTime, float lastTime, void*clientData)
 {
 	//model queue here!
@@ -1158,6 +1398,14 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 			else
 				MGlobal::displayInfo("failed to connect NameChangeFunction");
 		}
+		newId = MModelMessage::addNodeRemovedFromModelCallback(node, nodeRemoved, NULL, &Result);
+		if (Result == MS::kSuccess)
+		{
+			if (myCallbackArray.append(newId) == MS::kSuccess)
+				MGlobal::displayInfo("made connection to the removed node callback");
+		}
+		else
+			MGlobal::displayInfo("failed to connect removed shit");
 		if (trans.child(0).hasFn(MFn::kMesh))
 		{
 			newId = MNodeMessage::addAttributeChangedCallback(trans.child(0), attributeChanged, NULL, &Result);
@@ -1170,6 +1418,7 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 				MGlobal::displayInfo("failed to connect attributes");
 			if (!createMesh(node))
 			{
+				MGlobal::displayInfo(MFnTransform(node).name() + "sent to the queue");
 				appendQueue(node);
 			}
 		}
@@ -1224,6 +1473,15 @@ EXPORT MStatus initializePlugin(MObject obj)
 				else
 					MGlobal::displayInfo("failed to connect NameChangeFunction");
 			}
+			
+			newId = MModelMessage::addNodeRemovedFromModelCallback(meshIt.currentItem(), nodeRemoved, NULL, &loopResults);
+			if (loopResults == MS::kSuccess)
+			{
+				if (myCallbackArray.append(newId) == MS::kSuccess)
+					MGlobal::displayInfo("made connection to the removed node callback");
+			}
+			else
+				MGlobal::displayInfo("failed to connect removed shit");
 		}
 		if (trans.child(0).hasFn(MFn::kMesh))
 		{

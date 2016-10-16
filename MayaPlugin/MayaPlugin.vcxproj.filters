@@ -30,9 +30,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CircularBuffer.h">
+<<<<<<< HEAD
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
+=======
+>>>>>>> bajs
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

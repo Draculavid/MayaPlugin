@@ -31,6 +31,8 @@
 #include <maya/MFloatMatrix.h>
 #include <maya/MTimer.h>
 #include <maya/MItDependencyGraph.h>
+#include <maya/MItSelectionList.h>
+#include <maya/MItMeshVertex.h>
 
 // Wrappers
 #include <maya/MGlobal.h>
