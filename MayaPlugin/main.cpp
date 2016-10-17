@@ -831,7 +831,7 @@ bool createMaterial(MObject &node, bool isPhong)
 
 
 	unsigned int length;
-	CreateMaterial mHeader{ 0, 0, 0, 0, 0 };
+	CreateMaterial mHeader{ 0, 0, 0, 0, 0, isPhong };
 	ambient amb;
 	diffuse diff;
 	specular spec;
@@ -848,6 +848,7 @@ bool createMaterial(MObject &node, bool isPhong)
 	INFO = "";
 
 	materialName = lambert.name();
+	mHeader.nameLength = materialName.length();
 
 	if (getTextureFileInfo(node, tex::textureTypes[tex::NORMAL], paths[tex::NORMAL]))
 	{
@@ -1074,6 +1075,8 @@ bool createMesh(MObject &node)
 			quadSplit += ".quadSplit"" 0;";
 			MGlobal::executeCommandStringResult(quadSplit);
 
+		
+			MString materialName;
 			MFnTransform transform = node;
 			MIntArray indexList, offsetIdList, normalCount, uvCount, uvIds;
 			MFloatPointArray points;
@@ -1095,6 +1098,7 @@ bool createMesh(MObject &node)
 			//kissaner = "";
 
 			/*Creating the headers to send*/
+			MStatus res;
 			CreateMesh sMesh;
 			sMesh.vertexCount = points.length();
 			sMesh.indexCount = indexList.length();
@@ -1102,6 +1106,15 @@ bool createMesh(MObject &node)
 			mMesh.getTriangleOffsets(normalCount, offsetIdList);
 			MIntArray vertexList, vertexCount;
 			//mMesh.getVertices(vertexCount, vertexList);
+
+			/*getting material name n length*/
+			MItDependencyNodes materialIt(MFn::kLambert, &res);
+			for (; !materialIt.isDone(); materialIt.next())
+			{
+				MFnLambertShader mMaterial(materialIt.thisNode());
+				materialName = mMaterial.name();
+			}
+			sMesh.materialNameLength = materialName.length();
 
 			/*getting the position of the mesh*/
 			Vector sTran, sScal;
@@ -1178,7 +1191,8 @@ bool createMesh(MObject &node)
 				+ sizeof(Vector4)
 				+ (sizeof(float) * u.length()) * 2
 				+ (sizeof(Index)*sMesh.uvIndexCount)
-				+ sMesh.nameLength;
+				+ sMesh.nameLength
+				+ sMesh.materialNameLength;
 
 			sMesh.normalIndexCount = normalId.length();
 
@@ -1221,11 +1235,13 @@ bool createMesh(MObject &node)
 			memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
 			pek += sizeof(float)*u.length();
 
-			memcpy(pek, (char*)&v[0], sizeof(float)*v.length());
+			memcpy(pek, (char*)&v[0], sizeof(float)*u.length());
 			pek += sizeof(float)*u.length();
 
 			memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
+			pek += sizeof(Index)*sMesh.uvIndexCount;
 
+			memcpy(pek, materialName.asChar(), sMesh.materialNameLength);
 
 			while (true)
 			{

@@ -1,15 +1,1 @@
-﻿  main.cpp
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(515): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(516): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(517): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(518): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(634): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1339): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1340): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1341): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1342): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1399): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1426): warning C4018: '<': signed/unsigned mismatch
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1617): warning C4390: ';': empty controlled statement found; is this the intent?
-  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
-  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.pdb (Full PDB)
+﻿  MayaPlugin.vcxproj -> C:\Users\BTH\Desktop\MayaPlugin2\x64\Debug\MayaPlugin.mll

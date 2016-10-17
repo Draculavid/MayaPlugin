@@ -15,6 +15,7 @@ struct CreateMesh
 	that make up the name. So put a null byte at nameLength+1*/
 	unsigned int uvCount;
 	unsigned int uvIndexCount;
+	unsigned int materialNameLength;
 };
 struct Transformation
 {
@@ -79,6 +80,7 @@ struct CreateMaterial
 	unsigned int ambientPathLength;
 	unsigned int specularPathlength;
 	unsigned int nameLength;
+	bool specular;
 };
 struct ambient
 {
