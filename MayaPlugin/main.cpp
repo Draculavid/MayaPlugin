@@ -831,7 +831,7 @@ bool createMaterial(MObject &node, bool isPhong)
 
 
 	unsigned int length;
-	CreateMaterial mHeader{ 0, 0, 0, 0, 0, isPhong };
+	CreateMaterial mHeader{ 0, 0, 0, 0, 0, isPhong, };
 	ambient amb;
 	diffuse diff;
 	specular spec;
@@ -987,11 +987,11 @@ bool createMaterial(MObject &node, bool isPhong)
 	//MEMCOPY DIS WOOOOO
 	length = (sizeof(MainHeader)
 		+ sizeof(CreateMaterial)
-		+ mHeader.nameLength
-		+ mHeader.texturePathLength
-		+ mHeader.normalPathLength
-		+ mHeader.ambientPathLength
-		+ mHeader.specularPathlength
+		+ mHeader.nameLength + 1
+		+ mHeader.texturePathLength + 1
+		+ mHeader.normalPathLength + 1
+		+ mHeader.ambientPathLength + 1
+		+ mHeader.specularPathlength + 1
 		+ sizeof(ambient)
 		+ sizeof(diffuse)
 		+ sizeof(specular));
@@ -1018,19 +1018,19 @@ bool createMaterial(MObject &node, bool isPhong)
 
 
 	memcpy(pek, (char*)materialName.asChar(), mHeader.nameLength);
-	pek += mHeader.nameLength;
+	pek += mHeader.nameLength + 1;
 
 	memcpy(pek, (char*)paths[tex::DIFFUSE].asChar(), mHeader.texturePathLength);
-	pek += mHeader.texturePathLength;
+	pek += mHeader.texturePathLength + 1;
 
 	memcpy(pek, (char*)paths[tex::NORMAL].asChar(), mHeader.normalPathLength);
-	pek += mHeader.normalPathLength;
+	pek += mHeader.normalPathLength + 1;
 
 	memcpy(pek, (char*)paths[tex::AMBIENT].asChar(), mHeader.ambientPathLength);
-	pek += mHeader.ambientPathLength;
+	pek += mHeader.ambientPathLength + 1;
 
 	memcpy(pek, (char*)paths[tex::SPECULAR].asChar(), mHeader.specularPathlength);
-	pek += mHeader.specularPathlength;
+	pek += mHeader.specularPathlength + 1;
 
 	memcpy(pek, (char*)&amb, sizeof(ambient));
 	pek += sizeof(ambient);
@@ -1108,13 +1108,34 @@ bool createMesh(MObject &node)
 			//mMesh.getVertices(vertexCount, vertexList);
 
 			/*getting material name n length*/
-			MItDependencyNodes materialIt(MFn::kLambert, &res);
+			MObjectArray shaders;
+			MIntArray shaderIndex;
+			mMesh.getConnectedShaders(0, shaders, shaderIndex);
+			for (unsigned int i; i < shaders.length(); i++)
+			{
+				MPlugArray connections;
+				MFnDependencyNode shaderGroup(shaders[i]);
+				MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
+
+				shaderPlug.connectedTo(connections, true, false);
+				for (unsigned int j; j < connections.length(); j++)
+				{
+					if (connections[j].node().hasFn(MFn::kLambert))
+					{
+						MFnLambertShader lambertShader(connections[j].node());
+						materialName = lambertShader.name();
+						sMesh.materialNameLength = materialName.length();
+					}
+				}
+			}
+
+	/*		MItDependencyNodes materialIt(MFn::kLambert, &res);
 			for (; !materialIt.isDone(); materialIt.next())
 			{
 				MFnLambertShader mMaterial(materialIt.thisNode());
 				materialName = mMaterial.name();
 			}
-			sMesh.materialNameLength = materialName.length();
+			sMesh.materialNameLength = materialName.length();*/
 
 			/*getting the position of the mesh*/
 			Vector sTran, sScal;
@@ -1192,7 +1213,7 @@ bool createMesh(MObject &node)
 				+ (sizeof(float) * u.length()) * 2
 				+ (sizeof(Index)*sMesh.uvIndexCount)
 				+ sMesh.nameLength
-				+ sMesh.materialNameLength;
+				+ sMesh.materialNameLength + 1;
 
 			sMesh.normalIndexCount = normalId.length();
 
@@ -1241,7 +1262,7 @@ bool createMesh(MObject &node)
 			memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
 			pek += sizeof(Index)*sMesh.uvIndexCount;
 
-			memcpy(pek, materialName.asChar(), sMesh.materialNameLength);
+			memcpy(pek, materialName.asChar(), sMesh.materialNameLength + 1);
 
 			while (true)
 			{
@@ -1525,6 +1546,14 @@ EXPORT MStatus initializePlugin(MObject obj)
 	producer = new CircularBuffer(L"poop3", 200, true, 256);
 	msg = new char[(200 * (1 << 10))/4];
 
+	MItDependencyNodes materialIt(MFn::kLambert, &res); //FOR CALLBACK USE ATTRIBUTE CHANGED WITH MATERIAL N CHECK PLUG SHIT
+	for (; !materialIt.isDone(); materialIt.next())
+	{
+		MFn::Type currentType = materialIt.thisNode().apiType();
+		createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
+
+	}
+
 	/*adding callback for matrix change in items that already exist*/
 	MItDag meshIt(MItDag::kBreadthFirst, MFn::kTransform, &res);
 	//bajs.transformationMatrix();
@@ -1618,13 +1647,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 				MGlobal::displayInfo("failed to connest");
 		} */
 	}
-	MItDependencyNodes materialIt(MFn::kLambert, &res);
-	for (; !materialIt.isDone(); materialIt.next())
-	{
-		MFn::Type currentType = materialIt.thisNode().apiType();
-		createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
 
-	}
 	createViewportCamera();
 	/*adding callback for time*/
 	MCallbackId newId = MTimerMessage::addTimerCallback(UPDATE_TIME, elapsedTimeFunction, NULL, &loopResults);
