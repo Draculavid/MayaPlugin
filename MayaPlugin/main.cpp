@@ -236,7 +236,9 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 			MObject mNode;
 			iter.getDependNode(mNode);
 			//MDagPath nodePath;
-			if (mNode == transformNode)
+			MObject kuk = MFnTransform(mNode).parent(0);
+
+			if (mNode == transformNode || kuk == transformNode)
 			{
 				//MGlobal::displayInfo(listName);
 				//MString info;
@@ -664,7 +666,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 					length += sizeof(sendVertex);
 				}
 
-				MGlobal::displayInfo("done!");
+				//MGlobal::displayInfo("done!");
 				producer->push(msg, length);
 			}
 			//MPlug kuken = plug.parent();
@@ -768,7 +770,8 @@ bool createMesh(MObject &node)
 	//setAttr "pCubeShape1.quadSplit" 0;
 	if (node.apiType() != MFn::kInvalid)
 	{
-		MFnMesh mMesh(((MFnTransform)(node)).child(0), NULL);
+		//MFnMesh mMesh(((MFnTransform)(node)).child(0), NULL);
+		MFnMesh mMesh(node, NULL);
 		if (mMesh.canBeWritten())
 		{
 			MString quadSplit = "setAttr """;
@@ -776,7 +779,10 @@ bool createMesh(MObject &node)
 			quadSplit += ".quadSplit"" 0;";
 			MGlobal::executeCommandStringResult(quadSplit);
 
-			MFnTransform transform = node;
+			MFnTransform transform = mMesh.parent(0);
+
+			MGlobal::displayInfo(transform.name());
+
 			MIntArray indexList, offsetIdList, normalCount, uvCount, uvIds;
 			MFloatPointArray points;
 			MFloatArray u, v;
@@ -835,7 +841,7 @@ bool createMesh(MObject &node)
 			//kissaner += offsetIdList.length();
 			//MGlobal::displayInfo(kissaner);
 
-
+			//MString kissaner;
 			//kissaner = "";
 			//for (int i = 0; i < sMesh.indexCount; i++)
 			//{
@@ -849,13 +855,13 @@ bool createMesh(MObject &node)
 			//}
 			//MGlobal::displayInfo(kissaner);
 			//kissaner = "";
-			/*for (int i = 0; i < test.length(); i++)
-			{
-				kissaner += test[i];
-				kissaner += ", ";
-			}
-			MGlobal::displayInfo(kissaner);
-			kissaner = "";*/
+			//for (int i = 0; i < test.length(); i++)
+			//{
+			//	kissaner += test[i];
+			//	kissaner += ", ";
+			//}
+			//MGlobal::displayInfo(kissaner);
+			//kissaner = "";
 			/*for (int i = 0; i < test1.length(); i++)
 			{
 				kissaner += test1[i];
@@ -1144,12 +1150,74 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 {
 	MGlobal::displayInfo("created: " + MFnTransform(node).name());
 
+	//if (node.hasFn(MFn::kTransform) && !node.hasFn(MFn::kMesh))
+	//{
+	//	MFnTransform trans = node;
+	//	if(trans.canBeWritten())
+	//		MGlobal::displayInfo("locked");
+	//	/*if (trans.isDefaultNode())
+	//		MGlobal::displayInfo("default");
+	//	if (trans.isLocked())
+	//		MGlobal::displayInfo("locked");
+	//	if (trans.isShared())
+	//		MGlobal::displayInfo("shared");
+	//	if (node.isNull())
+	//		MGlobal::displayInfo("isNull");
+	//	if (trans.isTrackingEdits())
+	//		MGlobal::displayInfo("tracking");
+	//	if (trans.isInstanced())
+	//		MGlobal::displayInfo("instanced");
+	//	if (trans.isIntermediateObject())
+	//		MGlobal::displayInfo("interwhat");*/
+	//	if (trans.isInstanceable())
+	//		MGlobal::displayInfo("instance");
+
+	//}
+	//if (node.hasFn(MFn::kMesh))
+	//{
+	//	MGlobal::displayInfo("sug skit!");
+	//}
 	/*connecting the new node the the worldmatrix function*/
+	if (node.hasFn(MFn::kMesh))
+	{
+		MStatus Result = MS::kSuccess;
+		//MObject trans = MFnMesh(node).parent(0);
+		//MObject tranas = MFnMesh(node).child(0);
+
+		//MGlobal::displayInfo(trans.name());
+		//MGlobal::displayInfo(tranas.name());
+
+		MDagPath meshDag = MDagPath::getAPathTo(node);
+		MCallbackId newId = MDagMessage::addWorldMatrixModifiedCallback(meshDag, WorldMatrixModified, NULL, &Result);
+		if (Result == MS::kSuccess)
+		{
+			if (myCallbackArray.append(newId) == MS::kSuccess)
+			{
+				//MGlobal::displayInfo(trans.name() + " Successfully added to the MatrixModified Function");
+			}
+		}
+		//if (trans.child(0).hasFn(MFn::kMesh))
+		//{
+			newId = MNodeMessage::addAttributeChangedCallback(node, attributeChanged, NULL, &Result);
+			if (Result == MS::kSuccess)
+			{
+				if (myCallbackArray.append(newId) == MS::kSuccess)
+					MGlobal::displayInfo("made connection to the attributtes");
+			}
+			else
+				MGlobal::displayInfo("failed to connect attributes");
+			if (!createMesh(node))
+			{
+				MGlobal::displayInfo(MFnTransform(node).name() + "sent to the queue");
+				appendQueue(node);
+			}
+		//}
+	}
 	if (node.hasFn(MFn::kTransform))
 	{
 		MStatus Result = MS::kSuccess;
 		MFnTransform trans = node;
-		MDagPath meshDag = MDagPath::getAPathTo(trans.child(0));
+		/*MDagPath meshDag = MDagPath::getAPathTo(trans.child(0));
 		MCallbackId newId = MDagMessage::addWorldMatrixModifiedCallback(meshDag, WorldMatrixModified, NULL, &Result);
 		if (Result == MS::kSuccess)
 		{
@@ -1157,8 +1225,8 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 			{
 				MGlobal::displayInfo(trans.name() + " Successfully added to the MatrixModified Function");
 			}
-		}
-		newId = MNodeMessage::addNameChangedCallback(trans.child(0), changedNameFunction, NULL, &Result);
+		}*/
+		MCallbackId newId = MNodeMessage::addNameChangedCallback(trans.child(0), changedNameFunction, NULL, &Result);
 		if (Result == MS::kSuccess)
 		{
 			if (myCallbackArray.append(newId) == MS::kSuccess)
@@ -1176,7 +1244,7 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 		}
 		else
 			MGlobal::displayInfo("failed to connect removed shit");
-		if (trans.child(0).hasFn(MFn::kMesh))
+		/*if (trans.child(0).hasFn(MFn::kMesh))
 		{
 			newId = MNodeMessage::addAttributeChangedCallback(trans.child(0), attributeChanged, NULL, &Result);
 			if (Result == MS::kSuccess)
@@ -1186,12 +1254,12 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 			}
 			else
 				MGlobal::displayInfo("failed to connect attributes");
-			if (!createMesh(node))
+			if (!createMesh(trans.child(0)))
 			{
 				MGlobal::displayInfo(MFnTransform(node).name() + "sent to the queue");
-				appendQueue(node);
+				appendQueue(trans.child(0));
 			}
-		}
+		}*/
 	}
 }
 #pragma endregion
@@ -1264,7 +1332,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			}
 			else
 				MGlobal::displayInfo("failed to connect attributes");
-			createMesh(meshIt.currentItem());
+			createMesh(trans.child(0));
 			//MItMeshPolygon( const MObject & polyObject, MStatus * ReturnStatus = NULL );
 			//producer->push(trans.name().asChar(), trans.name().length());
 		}
