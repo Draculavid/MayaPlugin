@@ -1111,14 +1111,14 @@ bool createMesh(MObject &node)
 			MObjectArray shaders;
 			MIntArray shaderIndex;
 			mMesh.getConnectedShaders(0, shaders, shaderIndex);
-			for (unsigned int i; i < shaders.length(); i++)
+			for (unsigned int i = 0; i < shaders.length(); i++)
 			{
 				MPlugArray connections;
 				MFnDependencyNode shaderGroup(shaders[i]);
 				MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
 
 				shaderPlug.connectedTo(connections, true, false);
-				for (unsigned int j; j < connections.length(); j++)
+				for (unsigned int j = 0; j < connections.length(); j++)
 				{
 					if (connections[j].node().hasFn(MFn::kLambert))
 					{
