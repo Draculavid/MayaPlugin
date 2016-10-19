@@ -33,6 +33,7 @@
 #include <maya/MItDependencyGraph.h>
 #include <maya/MItSelectionList.h>
 #include <maya/MItMeshVertex.h>
+#include <maya/MItDependencyGraph.h>
 
 // Wrappers
 #include <maya/MGlobal.h>

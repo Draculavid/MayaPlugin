@@ -22,6 +22,11 @@ struct Transformation
 	unsigned int nameLength;
 	unsigned int modified;
 };
+struct nameChange
+{
+	unsigned int nameLength;
+	unsigned int newNameLength;
+};
 struct modifyVertex
 {
 	unsigned int nameLength;
