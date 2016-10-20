@@ -76,6 +76,16 @@ struct Vector4
 {
 	float x, y, z, w;
 };
+struct sendPersp
+{
+	Vector translation;
+	Vector4 rotation;
+};
+struct sendOrtho
+{
+	Vector translation;
+	double orthoWidth;
+};
 /*
 enum MsgType
 {

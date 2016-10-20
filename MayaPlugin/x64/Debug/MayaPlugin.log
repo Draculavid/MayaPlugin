@@ -1,1 +1,18 @@
-﻿  MayaPlugin.vcxproj -> \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
+﻿  main.cpp
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(636): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(637): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(638): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(639): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(673): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(674): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(675): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(676): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(859): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1293): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1294): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1295): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1296): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1353): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1380): warning C4018: '<': signed/unsigned mismatch
+\\storage10.student.bth.se\students\20142\dawi14\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1626): warning C4390: ';': empty controlled statement found; is this the intent?
+  MayaPlugin.vcxproj -> \\storage10.student.bth.se\students\20142\dawi14\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll

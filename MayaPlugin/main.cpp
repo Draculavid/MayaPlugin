@@ -14,6 +14,7 @@ MCallbackIdArray myCallbackArray;
 float CurrentTime = 0; //kanske göra en pekare för att kunna kontrollera minne
 bool cameraMovement = false;
 MObject modelQueue[QUEUE_VALUE];
+MString lastCamera = "";
 unsigned int nrInQueue = 0;
 char * msg;
 //std::queue <MObject>modelQueue;
@@ -597,9 +598,15 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 void preRenderCB(const MString& panelName, void * data)
 {
-	if (cameraMovement)
+	if (lastCamera == "")
+		lastCamera = panelName;
+	//lastCamera = &panelName;
+	MGlobal::displayInfo("changed somethingaaskfnalvnevoåiaernv");
+	if (cameraMovement || lastCamera != panelName)
 	{
-		//MGlobal::displayInfo(panelName);
+		if (lastCamera != panelName)
+			lastCamera = panelName;
+		MGlobal::displayInfo(panelName);
 		M3dView mCam = mCam.active3dView();
 		MDagPath camPath;
 		MStatus rs;
@@ -608,77 +615,154 @@ void preRenderCB(const MString& panelName, void * data)
 		MFnCamera sCamera(camPath);
 
 		MFnTransform transform = sCamera.parent(0);
+		MainHeader mHead{ 8 };
+
+		bool isOrtho = sCamera.isOrtho();
+		if (isOrtho)
+		{
+			size_t length =
+				sizeof(MainHeader)
+				+ sizeof(bool)
+				+ sizeof(Vector)
+				+ sizeof(double)
+				+ sizeof(Vector4);
+
+			
+			double orthoWidth = sCamera.orthoWidth();
+			Vector sTrans;
+			Vector4 sRot; double tempRot[4];
+			sTrans = transform.getTranslation(MSpace::kTransform, NULL);
+			transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+			sRot.x = tempRot[0];
+			sRot.y = tempRot[1];
+			sRot.z = tempRot[2];
+			sRot.w = tempRot[3];
+
+			char * pek = msg;
+			memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+			pek += sizeof(MainHeader);
+
+			memcpy(pek, (char*)&isOrtho, sizeof(bool));
+			pek += sizeof(bool);
+
+			memcpy(pek, (char*)&sRot, sizeof(Vector4));
+			pek += sizeof(Vector4);
+
+			memcpy(pek, (char*)&sTrans, sizeof(Vector));
+			pek += sizeof(Vector);
+
+			memcpy(pek, (char*)&orthoWidth, sizeof(double));
+
+			cameraMovement = false;
+			producer->push(msg, length);
+		}
+		else
+		{
+			size_t length =
+				sizeof(MainHeader)
+				+ sizeof(bool)
+				+ sizeof(Vector)
+				+ sizeof(Vector4);
+
+			/*this will also vary*/
+			Vector sTrans;
+			Vector4 sRot; double tempRot[4];
 
 
+			transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+			sRot.x = tempRot[0];
+			sRot.y = tempRot[1];
+			sRot.z = tempRot[2];
+			sRot.w = tempRot[3];
 
-		//MGlobal::displayInfo(transform.name() + " worldmatrix changed");
-		MainHeader mHead{ 4 };
+			sTrans = transform.getTranslation(MSpace::kTransform, NULL);
 
-		//kanske sätta en bool variabel som du skickar som "data
-		//ändra denna i worldmatrix changed för att visa att kameran har flyttat sig
+			char * pek = msg;
+			memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+			pek += sizeof(MainHeader);
 
-		size_t length =
-			sizeof(MainHeader)
-			+ sizeof(Transformation)
-			+ transform.name().length()
-			+ sizeof(unsigned int)
-			+ sizeof(Vector) * 2
-			+ sizeof(Vector4);
+			memcpy(pek, (char*)&isOrtho, sizeof(bool));
+			pek += sizeof(bool);
 
-		/*this will also vary*/
-		Vector sTrans, sScale; double tempScale[3];
-		Vector4 sRot; double tempRot[4];
+			memcpy(pek, (char*)&sRot, sizeof(Vector4));
+			pek += sizeof(Vector4);
 
-		transform.getScale(tempScale);
-		sScale = tempScale;
+			memcpy(pek, (char*)&sTrans, sizeof(Vector));
 
-		transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-		sRot.x = tempRot[0];
-		sRot.y = tempRot[1];
-		sRot.z = tempRot[2];
-		sRot.w = tempRot[3];
-
-		sTrans = transform.getTranslation(MSpace::kTransform, NULL);
-		unsigned int nameLength = transform.name().length();
-		Transformation mTransform{ 1, 3 };
-
-		/*temp shit for camera testing*/
-		MString mPersp = "persp";
-		unsigned int perspL = mPersp.length();
-
-		char * pek = msg;
-		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-		pek += sizeof(MainHeader);
-
-		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-		pek += sizeof(Transformation);
-
-		memcpy(pek, (char*)&perspL, sizeof(unsigned int));
-		pek += sizeof(unsigned int);
-
-		memcpy(pek, (char*)mPersp.asChar(), perspL);
-		pek += perspL;
-
-		/*memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-		pek += sizeof(unsigned int);
-
-		memcpy(pek, (char*)transform.name().asChar(), nameLength);
-		pek += nameLength;*/
-
-		memcpy(pek, (char*)&sScale, sizeof(Vector));
-		pek += sizeof(Vector);
-
-		memcpy(pek, (char*)&sRot, sizeof(Vector4));
-		pek += sizeof(Vector4);
-
-		memcpy(pek, (char*)&sTrans, sizeof(Vector));
-
-		//memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-		//pek += sizeof(unsigned int);
+			//memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+			//pek += sizeof(unsigned int);
 
 
-		cameraMovement = false;
-		producer->push(msg, length);
+			cameraMovement = false;
+			producer->push(msg, length);
+		}
+		
+		////MGlobal::displayInfo(transform.name() + " worldmatrix changed");
+
+		//	//kanske sätta en bool variabel som du skickar som "data
+		//	//ändra denna i worldmatrix changed för att visa att kameran har flyttat sig
+
+		//	size_t length =
+		//		sizeof(MainHeader)
+		//		+ sizeof(bool)
+		//		+ sizeof(Vector) * 2
+		//		+ sizeof(Vector4);
+
+		//	/*this will also vary*/
+		//	Vector sTrans, sScale; double tempScale[3];
+		//	Vector4 sRot; double tempRot[4];
+
+		//	transform.getScale(tempScale);
+		//	sScale = tempScale;
+
+		//	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+		//	sRot.x = tempRot[0];
+		//	sRot.y = tempRot[1];
+		//	sRot.z = tempRot[2];
+		//	sRot.w = tempRot[3];
+
+		//	sTrans = transform.getTranslation(MSpace::kTransform, NULL);
+		//	unsigned int nameLength = transform.name().length();
+		//	Transformation mTransform{ 1, 3 };
+
+		//	/*temp shit for camera testing*/
+		//	MString mPersp = "persp";
+		//	unsigned int perspL = mPersp.length();
+
+		//	char * pek = msg;
+		//	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+		//	pek += sizeof(MainHeader);
+
+		//	memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+		//	pek += sizeof(Transformation);
+
+		//	memcpy(pek, (char*)&perspL, sizeof(unsigned int));
+		//	pek += sizeof(unsigned int);
+
+		//	memcpy(pek, (char*)mPersp.asChar(), perspL);
+		//	pek += perspL;
+
+		//	/*memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		//	pek += sizeof(unsigned int);
+
+		//	memcpy(pek, (char*)transform.name().asChar(), nameLength);
+		//	pek += nameLength;*/
+
+		//	memcpy(pek, (char*)&sScale, sizeof(Vector));
+		//	pek += sizeof(Vector);
+
+		//	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+		//	pek += sizeof(Vector4);
+
+		//	memcpy(pek, (char*)&sTrans, sizeof(Vector));
+
+		//	//memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		//	//pek += sizeof(unsigned int);
+
+
+		//	cameraMovement = false;
+		//	producer->push(msg, length); 
+			
 	}
 }
 
@@ -698,11 +782,17 @@ bool updateCamera()
 
 void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
-	MSelectionList sList;
-	MGlobal::getActiveSelectionList(sList);
-	//MPlug tempPlug;
-	MItSelectionList iter(sList);
-	//iter.kPlugSelectionItem;
+	
+	
+	/*if an orthographic camera "zooms"*/
+	if ((Amsg == (Amsg & MNodeMessage::kAttributeSet | Amsg & MNodeMessage::kIncomingDirection)))
+	{
+		if (plug.node().apiType() == MFn::kCamera)
+		{
+			cameraMovement = true;
+		}
+	}
+		//iter.kPlugSelectionItem;
 	/*MObject hejsan;
 	sList.getDependNode(0, hejsan);
 	sList.getPlug(0, tempPlug);
@@ -735,6 +825,10 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 		//MGlobal::displayInfo("knulla röv");
 	if (Amsg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
 	{
+		MSelectionList sList;
+		MGlobal::getActiveSelectionList(sList);
+		//MPlug tempPlug;
+		MItSelectionList iter(sList);
 		//MString info;
 		//info = MGlobal::executePythonCommandStringResult("filterExpand -sm 31");
 		//MGlobal::displayInfo(info);
@@ -1490,9 +1584,11 @@ EXPORT MStatus initializePlugin(MObject obj)
 		}
 		if (trans.child(0).hasFn(MFn::kCamera))
 		{
-			if (MFnTransform(meshIt.currentItem()).name() == "persp")
+			if (MFnTransform(meshIt.currentItem()).name() != "persp")
 			{
-				//createCamera(meshIt.currentItem());
+				MCallbackId newId = MNodeMessage::addAttributeChangedCallback(trans.child(0), attributeChanged, NULL, &loopResults);
+				if (myCallbackArray.append(newId) == MS::kSuccess)
+					MGlobal::displayInfo("created test");
 			}
 		}
 
@@ -1566,8 +1662,6 @@ EXPORT MStatus initializePlugin(MObject obj)
 			MGlobal::displayInfo("created 3dpreprocess function");
 		}
 	}
-	else
-		MGlobal::displayInfo("Failed to create 3dpreprocess function");
 	newId = MDGMessage::addNodeAddedCallback(addedNodeFunction, kDefaultNodeType, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
@@ -1609,6 +1703,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 	}
 	else
 		MGlobal::displayInfo("Failed to create 3dpreprocess function");
+
 
 
 	return res;
