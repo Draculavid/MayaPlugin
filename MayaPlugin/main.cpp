@@ -642,6 +642,10 @@ void preRenderCB(const MString& panelName, void * data)
 		unsigned int nameLength = transform.name().length();
 		Transformation mTransform{ 1, 3 };
 
+		/*temp shit for camera testing*/
+		MString mPersp = "persp";
+		unsigned int perspL = mPersp.length();
+
 		char * pek = msg;
 		memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 		pek += sizeof(MainHeader);
@@ -649,11 +653,17 @@ void preRenderCB(const MString& panelName, void * data)
 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 		pek += sizeof(Transformation);
 
-		memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		memcpy(pek, (char*)&perspL, sizeof(unsigned int));
+		pek += sizeof(unsigned int);
+
+		memcpy(pek, (char*)mPersp.asChar(), perspL);
+		pek += perspL;
+
+		/*memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 		pek += sizeof(unsigned int);
 
 		memcpy(pek, (char*)transform.name().asChar(), nameLength);
-		pek += nameLength;
+		pek += nameLength;*/
 
 		memcpy(pek, (char*)&sScale, sizeof(Vector));
 		pek += sizeof(Vector);
@@ -1549,6 +1559,47 @@ EXPORT MStatus initializePlugin(MObject obj)
 		MGlobal::displayInfo("Failed to create addNodeCallback function");
 
 	newId = MUiMessage::add3dViewPreRenderMsgCallback("modelPanel4", preRenderCB, NULL, &loopResults);
+	if (loopResults == MS::kSuccess)
+	{
+		if (myCallbackArray.append(newId) == MS::kSuccess)
+		{
+			MGlobal::displayInfo("created 3dpreprocess function");
+		}
+	}
+	else
+		MGlobal::displayInfo("Failed to create 3dpreprocess function");
+	newId = MDGMessage::addNodeAddedCallback(addedNodeFunction, kDefaultNodeType, NULL, &loopResults);
+	if (loopResults == MS::kSuccess)
+	{
+		if (myCallbackArray.append(newId) == MS::kSuccess)
+		{
+			MGlobal::displayInfo("created addNodeCallback function");
+		}
+	}
+	else
+		MGlobal::displayInfo("Failed to create addNodeCallback function");
+
+	newId = MUiMessage::add3dViewPreRenderMsgCallback("modelPanel1", preRenderCB, NULL, &loopResults);
+	if (loopResults == MS::kSuccess)
+	{
+		if (myCallbackArray.append(newId) == MS::kSuccess)
+		{
+			MGlobal::displayInfo("created 3dpreprocess function");
+		}
+	}
+	else
+		MGlobal::displayInfo("Failed to create 3dpreprocess function");
+	newId = MUiMessage::add3dViewPreRenderMsgCallback("modelPanel2", preRenderCB, NULL, &loopResults);
+	if (loopResults == MS::kSuccess)
+	{
+		if (myCallbackArray.append(newId) == MS::kSuccess)
+		{
+			MGlobal::displayInfo("created 3dpreprocess function");
+		}
+	}
+	else
+		MGlobal::displayInfo("Failed to create 3dpreprocess function");
+	newId = MUiMessage::add3dViewPreRenderMsgCallback("modelPanel3", preRenderCB, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
 		if (myCallbackArray.append(newId) == MS::kSuccess)
