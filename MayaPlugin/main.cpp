@@ -40,6 +40,31 @@ bool appendQueue(MObject & node)
 	}
 	return false;
 }
+bool setMaterial(MString&mesh, MString&material)
+{
+	MainHeader mHead = { 10 };
+	setMat hSetMat = { mesh.length() + 1, material.length() + 1 };
+	int length = sizeof(MainHeader) + sizeof(setMat) + hSetMat.meshNameLength + hSetMat.materialNameLength;
+	
+	
+	char* pek = msg;
+
+	memcpy(pek, &mHead, sizeof(unsigned int));
+	pek += sizeof(unsigned int);
+
+	memcpy(pek, &hSetMat, sizeof(setMat));
+	pek += sizeof(setMat);
+
+	memcpy(pek, mesh.asChar(), hSetMat.meshNameLength);
+	pek += hSetMat.meshNameLength;
+
+	memcpy(pek, material.asChar(), hSetMat.materialNameLength);
+
+	if (producer->push(msg, length))
+
+	return true;
+}
+
 #pragma region callbacks
 //void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 //{
@@ -689,6 +714,67 @@ bool updateCamera()
 
 void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
+#pragma region material stuff
+
+
+	MStatus res;
+
+	if ((Amsg & MNodeMessage::kConnectionMade && Amsg & MNodeMessage::kOtherPlugSet))
+	{
+		//MGlobal::displayInfo("\n----- Changed Material -----\n");
+		
+		MPlug surfaceShPlug, maOtherPlug;
+		MPlugArray surfaceConnections;
+
+		MObject mNode = plug.node();
+		
+		
+		
+
+		MString derp = "";
+
+		surfaceShPlug = ((MFnDependencyNode)otherPlug.node()).findPlug("surfaceShader", &res);
+		surfaceShPlug.connectedTo(surfaceConnections, true, false, &res);
+		for (unsigned int i = 0; i < surfaceConnections.length(); i++)
+		{
+			//derp += "- material name -\n";
+			//derp += ((MFnDependencyNode)surfaceConnections[i].node()).name();
+			setMaterial(((MFnTransform)((MFnMesh)mNode).parent(0)).name(), ((MFnDependencyNode)surfaceConnections[i].node()).name());
+		}
+		//derp += "\n- mesh name -\n";
+		//derp+= ((MFnTransform)((MFnMesh)mNode).parent(0)).name();
+
+		//MGlobal::displayInfo(derp);
+		
+	}
+
+	//MObjectArray shaders;
+	//MIntArray shaderIndex;
+	//mMesh.getConnectedShaders(0, shaders, shaderIndex);
+	//for (unsigned int i = 0; i < shaders.length(); i++)
+	//{
+	//	MPlugArray connections;
+	//	MFnDependencyNode shaderGroup(shaders[i]);
+	//	MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
+
+	//	shaderPlug.connectedTo(connections, true, false);
+	//	for (unsigned int j = 0; j < connections.length(); j++)
+	//	{
+	//		if (connections[j].node().hasFn(MFn::kLambert))
+	//		{
+	//			MFnLambertShader lambertShader(connections[j].node());
+	//			materialName = lambertShader.name();
+	//			sMesh.materialNameLength = materialName.length();
+	//		}
+	//	}
+	//}
+
+
+#pragma endregion
+
+
+
+
 	MSelectionList sList;
 	MGlobal::getActiveSelectionList(sList);
 	//MPlug tempPlug;
@@ -1255,36 +1341,6 @@ bool createMesh(MObject &node)
 			MIntArray vertexList, vertexCount;
 			//mMesh.getVertices(vertexCount, vertexList);
 
-			/*getting material name n length*/
-			MObjectArray shaders;
-			MIntArray shaderIndex;
-			mMesh.getConnectedShaders(0, shaders, shaderIndex);
-			for (unsigned int i = 0; i < shaders.length(); i++)
-			{
-				MPlugArray connections;
-				MFnDependencyNode shaderGroup(shaders[i]);
-				MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
-
-				shaderPlug.connectedTo(connections, true, false);
-				for (unsigned int j = 0; j < connections.length(); j++)
-				{
-					if (connections[j].node().hasFn(MFn::kLambert))
-					{
-						MFnLambertShader lambertShader(connections[j].node());
-						materialName = lambertShader.name();
-						sMesh.materialNameLength = materialName.length();
-					}
-				}
-			}
-
-	/*		MItDependencyNodes materialIt(MFn::kLambert, &res);
-			for (; !materialIt.isDone(); materialIt.next())
-			{
-				MFnLambertShader mMaterial(materialIt.thisNode());
-				materialName = mMaterial.name();
-			}
-			sMesh.materialNameLength = materialName.length();*/
-
 			/*getting the position of the mesh*/
 			Vector sTran, sScal;
 			Vector4 sRot;
@@ -1360,8 +1416,8 @@ bool createMesh(MObject &node)
 				+ sizeof(Vector4)
 				+ (sizeof(float) * u.length()) * 2
 				+ (sizeof(Index)*sMesh.uvIndexCount)
-				+ sMesh.nameLength
-				+ sMesh.materialNameLength + 1;
+				+ sMesh.nameLength;
+				//+ sMesh.materialNameLength + 1;
 
 			sMesh.normalIndexCount = normalId.length();
 
@@ -1408,9 +1464,9 @@ bool createMesh(MObject &node)
 			pek += sizeof(float)*u.length();
 
 			memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
-			pek += sizeof(Index)*sMesh.uvIndexCount;
+			//pek += sizeof(Index)*sMesh.uvIndexCount;
 
-			memcpy(pek, materialName.asChar(), sMesh.materialNameLength + 1);
+			//memcpy(pek, materialName.asChar(), sMesh.materialNameLength + 1);
 
 			while (true)
 			{
@@ -1428,7 +1484,27 @@ bool createMesh(MObject &node)
 				}
 			}
 
+			/*getting n settin material (kanske...) ps. ibland... pps. bajs*/
+			MObjectArray shaders;
+			MIntArray shaderIndex;
+			mMesh.getConnectedShaders(0, shaders, shaderIndex);
+			for (unsigned int i = 0; i < shaders.length(); i++)
+			{
+				MPlugArray connections;
+				MFnDependencyNode shaderGroup(shaders[i]);
+				MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
 
+				shaderPlug.connectedTo(connections, true, false);
+				for (unsigned int j = 0; j < connections.length(); j++)
+				{
+					if (connections[j].node().hasFn(MFn::kLambert))
+					{
+						MFnLambertShader lambertShader(connections[j].node());
+						materialName = lambertShader.name();
+						setMaterial(transform.name(), lambertShader.name());
+					}
+				}
+			}
 			return true;
 		}
 	}

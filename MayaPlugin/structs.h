@@ -15,7 +15,6 @@ struct CreateMesh
 	that make up the name. So put a null byte at nameLength+1*/
 	unsigned int uvCount;
 	unsigned int uvIndexCount;
-	unsigned int materialNameLength;
 };
 struct Transformation
 {
@@ -99,7 +98,11 @@ struct specular
 {
 	float r, g, b, shine;
 };
-
+struct setMat
+{
+	unsigned int meshNameLength;
+	unsigned int materialNameLength;
+};
 #pragma endregion
 /*
 enum MsgType
