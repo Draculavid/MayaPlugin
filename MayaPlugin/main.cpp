@@ -1011,26 +1011,50 @@ bool updateCamera()
 
 void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
-	MGlobal::displayInfo("RRRRRRRRRREEEEEEEEEEETARDEEEEEEEEEEEEED");
 	MString RUMPA;
+	MObject object = plug.node();
 
-	if (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection) //ATTRIBUTE
+
+	if ((Amsg == (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection) ||
+		Amsg == (Amsg & MNodeMessage::kConnectionBroken | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet) ||
+		Amsg == (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) && 
+		object.apiType() )
+
 	{
-		RUMPA += "ATRUBBUTE!\n";
-		RUMPA += plug.name();
+		//find connected meshes....
+		MGlobal::displayInfo("----- FIND MESHES -----");
+		MFnLambertShader materialObj = plug.node();
+
+		RUMPA += materialObj.name();
 		RUMPA += "\n";
-		RUMPA += otherPlug.name();
 
+		if (Amsg == (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection)) //ATTRIBUTE
+		{
+			RUMPA += "ATRUBBUTE!\n";
+			RUMPA += plug.name();
+			RUMPA += "\n";
+			RUMPA += otherPlug.name();
+
+		}
+
+		if (Amsg == (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) //TEXTURE ADDED
+		{
+			RUMPA += "TAXTUER ADDED!\n";
+			RUMPA += plug.name();
+			RUMPA += "\n";
+			RUMPA += otherPlug.name();
+		}
+
+		if (Amsg == (Amsg & MNodeMessage::kConnectionBroken | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) //TEXTURE REMOVED
+		{
+			RUMPA += "TAXTUER REMOVED!\n";
+			RUMPA += plug.name();
+			RUMPA += "\n";
+			RUMPA += otherPlug.name();
+
+		}
+	
 	}
-
-	if (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet) //TEXTURE
-	{
-		RUMPA += "TAXTUAER!\n";
-		RUMPA += plug.name();
-		RUMPA += "\n";
-		RUMPA += otherPlug.name();
-	}
-
 	MGlobal::displayInfo(RUMPA);
 }
 

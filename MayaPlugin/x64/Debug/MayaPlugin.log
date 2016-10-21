@@ -1,1 +1,15 @@
-﻿  MayaPlugin.vcxproj -> C:\Users\BTH\Desktop\MayaPlugin2\x64\Debug\MayaPlugin.mll
+﻿  main.cpp
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(959): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(960): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(961): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(962): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1203): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1680): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1681): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1682): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1683): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1740): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1767): warning C4018: '<': signed/unsigned mismatch
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(2036): warning C4390: ';': empty controlled statement found; is this the intent?
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(363): warning C4715: 'setMaterial': not all control paths return a value
+LINK : fatal error LNK1168: cannot open C:\Users\BTH\Desktop\MayaPlugin\x64\Debug\MayaPlugin.mll for writing
