@@ -40,17 +40,314 @@ bool appendQueue(MObject & node)
 	}
 	return false;
 }
-bool setMaterial(MString&mesh, MString&material)
+bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path) //takes a material node, and a type which specifies plugtype (f.ex.: "normalCamera") for wanted texture, returns in &path
 {
-	MainHeader mHead = { 10 };
-	setMat hSetMat = { mesh.length() + 1, material.length() + 1 };
-	int length = sizeof(MainHeader) + sizeof(setMat) + hSetMat.meshNameLength + hSetMat.materialNameLength;
-	
-	
-	char* pek = msg;
+	MStatus res;
+	MPlugArray plugArray;
+	MFnDependencyNode depNode(shaderNode, &res);
 
-	memcpy(pek, &mHead, sizeof(unsigned int));
-	pek += sizeof(unsigned int);
+	MPlug attrib = depNode.findPlug(type, &res);
+	bool connected = attrib.connectedTo(plugArray, true, false, &res);
+
+	if (res == MS::kSuccess && plugArray.length() > 0)
+	{
+		MObject source = plugArray[0].node();
+
+		MPlug FileTexNamePlug;
+
+		if (source.apiType() == MFn::kFileTexture)
+		{
+			FileTexNamePlug = MFnDependencyNode(source).findPlug("ftn", &res);
+			if (res == MS::kSuccess)
+			{
+				FileTexNamePlug.getValue(path);
+				return true;
+			}
+		}
+
+		MItDependencyGraph dgIt(source,
+			MFn::kFileTexture,
+			MItDependencyGraph::kUpstream,
+			MItDependencyGraph::kBreadthFirst,
+			MItDependencyGraph::kNodeLevel);
+
+		dgIt.disablePruningOnFilter();
+		MFnDependencyNode dgNodeFnSet;
+
+		for (; !dgIt.isDone(); dgIt.next()) {
+
+			MObject thisNode = dgIt.thisNode();
+			dgNodeFnSet.setObject(thisNode);
+
+			MPlug FileTexNamePlug = dgNodeFnSet.findPlug("ftn", &res);
+			if (res == MS::kSuccess)
+			{
+				FileTexNamePlug.getValue(path);
+				return true;
+			}
+		}
+	}
+	else
+	{
+		path = "";
+		return false; //not using a texture
+	}
+
+	return false;
+}
+int createMaterial(MObject &node, bool isPhong, char *& pek)
+{
+	MStatus res;
+
+	MString paths[tex::TEXTURE_TYPE_COUNT];
+	MainHeader mainHeader{ 3 };
+
+
+	unsigned int length;
+	CreateMaterial mHeader{ 0, 0, 0, 0, 0, isPhong, };
+	ambient amb;
+	diffuse diff;
+	specular spec;
+	MString materialName;
+	MString MeshName;
+
+	MGlobal::displayInfo("\nMATERIAL FOUND\n");
+
+	MFnLambertShader lambert(node);
+
+	MString INFO = "NAME: ";
+	INFO += lambert.name();
+	INFO += "\n";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+
+	materialName = lambert.name();
+	mHeader.nameLength = materialName.length();
+
+	if (getTextureFileInfo(node, tex::textureTypes[tex::NORMAL], paths[tex::NORMAL]))
+	{
+		mHeader.normalPathLength = paths[tex::NORMAL].length();
+		MString INFO = "Normal: ";
+		INFO += paths[tex::NORMAL];
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+	}
+
+	MGlobal::displayInfo("Ambient: ");
+	if (!getTextureFileInfo(node, tex::textureTypes[tex::AMBIENT], paths[tex::AMBIENT]))
+	{
+
+
+		lambert.ambientColor().get((float*)&amb);
+		INFO += amb.r;
+		INFO += ", ";
+		INFO += amb.g;
+		INFO += ", ";
+		INFO += amb.b;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+	}
+	mHeader.ambientPathLength = paths[tex::AMBIENT].length();
+
+	MGlobal::displayInfo("Diffuse: \n");
+	if (!getTextureFileInfo(node, tex::textureTypes[tex::DIFFUSE], paths[tex::DIFFUSE]))
+	{
+		lambert.color().get((float*)&diff);
+		INFO += diff.r;
+		INFO += ", ";
+		INFO += diff.g;
+		INFO += ", ";
+		INFO += diff.b;
+		INFO += ", ";
+	}
+	mHeader.texturePathLength = paths[tex::DIFFUSE].length();
+	INFO += "Color: ";
+	INFO += paths[tex::DIFFUSE];
+	INFO += "\n";
+	diff.coeff = lambert.diffuseCoeff();
+	INFO += "diffuse coefficient : ";
+	INFO += diff.coeff;
+	INFO += ", ";
+	MGlobal::displayInfo(INFO);
+	INFO = "";
+
+
+	if (isPhong)
+	{
+		MGlobal::displayInfo("AND IT HAS PHONG SHIT\n");
+		MFnPhongShader phong(node);
+
+		MGlobal::displayInfo("Spec:");
+		if (!getTextureFileInfo(node, tex::textureTypes[tex::SPECULAR], paths[tex::SPECULAR]))
+		{
+			mHeader.specularPathlength = paths[tex::SPECULAR].length();
+
+			phong.specularColor().get((float*)&spec);
+			INFO += spec.r;
+			INFO += ", ";
+			INFO += spec.g;
+			INFO += ", ";
+			INFO += spec.b;
+			INFO += "\n";
+			MGlobal::displayInfo(INFO);
+			INFO = "";
+		}
+		mHeader.specularPathlength = paths[tex::SPECULAR].length();
+		spec.shine = phong.cosPower();
+		MGlobal::displayInfo("Shine:");
+		INFO += spec.shine;
+		INFO += "\n";
+		MGlobal::displayInfo(INFO);
+		INFO = "";
+
+		//MGlobal::displayInfo("Reflection color:");
+		//INFO += phong.reflectedColor().r;
+		//INFO += ", ";
+		//INFO += phong.reflectedColor().g;
+		//INFO += ", ";
+		//INFO += phong.reflectedColor().b;
+		//INFO += "\n";
+		//MGlobal::displayInfo(INFO);
+		//INFO = "";
+
+		//MGlobal::displayInfo("Reflectivity:");
+		//INFO += phong.reflectivity();
+		//INFO += "\n";
+		//MGlobal::displayInfo(INFO);
+		//INFO = "";
+	}
+
+	//MGlobal::displayInfo("Translucence:");
+	//INFO += lambert.translucenceCoeff();
+	//INFO += "\n";
+	//MGlobal::displayInfo(INFO);
+	//INFO = "";
+
+	//if (!getTextureFileInfo(node, tex::textureTypes[tex::TRANSPARENCY]));
+	//{
+	//	MGlobal::displayInfo("Transparency:");
+	//	INFO += lambert.transparency().r;
+	//	INFO += ", ";
+	//	INFO += lambert.transparency().g;
+	//	INFO += ", ";
+	//	INFO += lambert.transparency().b;
+	//	INFO += "\n";
+	//	MGlobal::displayInfo(INFO);
+	//	INFO = "";
+	//}
+
+	//MGlobal::displayInfo("Glow:");
+	//INFO += lambert.glowIntensity();
+	//INFO += "\n";
+	//MGlobal::displayInfo(INFO);
+	//INFO = "";
+
+	//if (!getTextureFileInfo(node, tex::textureTypes[tex::INCANDESCENCE]));
+	//{
+	//	MGlobal::displayInfo("Incandescence:");
+	//	INFO += lambert.incandescence().r;
+	//	INFO += ", ";
+	//	INFO += lambert.incandescence().g;
+	//	INFO += ", ";
+	//	INFO += lambert.incandescence().b;
+	//	INFO += "\n";
+	//	MGlobal::displayInfo(INFO);
+	//	INFO = "";
+	//} 
+
+
+	//MEMCOPY DIS WOOOOO
+	length = (sizeof(MainHeader)
+		+ sizeof(CreateMaterial)
+		+ mHeader.nameLength + 1
+		+ mHeader.texturePathLength + 1
+		+ mHeader.normalPathLength + 1
+		+ mHeader.ambientPathLength + 1
+		+ mHeader.specularPathlength + 1
+		+ sizeof(ambient)
+		+ sizeof(diffuse)
+		+ sizeof(specular));
+
+	pek = msg;
+
+	memcpy(pek, (char*)&mainHeader, sizeof(MainHeader));
+	pek += sizeof(MainHeader);
+
+
+	memcpy(pek, (char*)&mHeader, sizeof(CreateMaterial));
+	pek += sizeof(CreateMaterial);
+
+
+
+	//THIS MIGHT WORK IF MSTRING DATA IS STRUCTURED THE WAY IT OUGHT TO BE... MEN SÅ KUL SKULLE VI VISST INTE HA
+	//char * tetas[256];
+	//int nameChunk = (mHeader.nameLength
+	//	+ mHeader.texturePathLength
+	//	+ mHeader.normalPathLength
+	//	+ mHeader.ambientPathLength
+	//	+ mHeader.specularPathlength);
+	//memcpy(pek, (char*)materialName.asChar(), nameChunk);
+	//*tetas = (pek + mHeader.nameLength);
+	//pek += nameChunk;
+
+	memcpy(pek, (char*)materialName.asChar(), mHeader.nameLength);
+	pek += mHeader.nameLength + 1;
+
+	memcpy(pek, (char*)paths[tex::DIFFUSE].asChar(), mHeader.texturePathLength);
+	pek += mHeader.texturePathLength + 1;
+
+	memcpy(pek, (char*)paths[tex::NORMAL].asChar(), mHeader.normalPathLength);
+	pek += mHeader.normalPathLength + 1;
+
+	memcpy(pek, (char*)paths[tex::AMBIENT].asChar(), mHeader.ambientPathLength);
+	pek += mHeader.ambientPathLength + 1;
+
+	memcpy(pek, (char*)paths[tex::SPECULAR].asChar(), mHeader.specularPathlength);
+	pek += mHeader.specularPathlength + 1;
+
+	memcpy(pek, (char*)&amb, sizeof(ambient));
+	pek += sizeof(ambient);
+
+	memcpy(pek, (char*)&diff, sizeof(diffuse));
+	pek += sizeof(diffuse);
+
+	if (mHeader.specular)
+	{
+		memcpy(pek, (char*)&spec, sizeof(specular));
+		pek += sizeof(specular);
+	}
+
+	//while (true)
+	//{
+	//	try
+	//	{
+	//		if (producer->push(msg, length))
+	//		{
+	//			MGlobal::displayInfo("Sent the mesh to the circular buffer");
+	//			break;
+	//		}
+	//	}
+	//	catch (...)
+	//	{
+	//		Sleep(1);
+	//	}
+	//}
+
+	return length;
+}
+bool setMaterial(MString&mesh, MString&material, char *& pek, int length)
+{
+
+	//MainHeader mHead = { 10 };
+	setMat hSetMat = { mesh.length() + 1, material.length() + 1 };
+	length += /*sizeof(MainHeader) +*/ sizeof(setMat) + hSetMat.meshNameLength + hSetMat.materialNameLength;
+	
+
+	//memcpy(pek, &mHead, sizeof(unsigned int));
+	//pek += sizeof(unsigned int);
 
 	memcpy(pek, &hSetMat, sizeof(setMat));
 	pek += sizeof(setMat);
@@ -712,6 +1009,31 @@ bool updateCamera()
 	return true;
 }
 
+void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
+{
+	MGlobal::displayInfo("RRRRRRRRRREEEEEEEEEEETARDEEEEEEEEEEEEED");
+	MString RUMPA;
+
+	if (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection) //ATTRIBUTE
+	{
+		RUMPA += "ATRUBBUTE!\n";
+		RUMPA += plug.name();
+		RUMPA += "\n";
+		RUMPA += otherPlug.name();
+
+	}
+
+	if (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet) //TEXTURE
+	{
+		RUMPA += "TAXTUAER!\n";
+		RUMPA += plug.name();
+		RUMPA += "\n";
+		RUMPA += otherPlug.name();
+	}
+
+	MGlobal::displayInfo(RUMPA);
+}
+
 void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
 #pragma region material stuff
@@ -719,32 +1041,47 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 
 	MStatus res;
 
+
+
+
+
 	if ((Amsg & MNodeMessage::kConnectionMade && Amsg & MNodeMessage::kOtherPlugSet))
 	{
-		//MGlobal::displayInfo("\n----- Changed Material -----\n");
+		MGlobal::displayInfo("\n----- Changed Material -----\n");
 		
 		MPlug surfaceShPlug, maOtherPlug;
 		MPlugArray surfaceConnections;
 
 		MObject mNode = plug.node();
+		MFnDependencyNode surfaceShader = otherPlug.node();
 		
-		
+	
+
+		MString derp;
 		
 
-		MString derp = "";
-
-		surfaceShPlug = ((MFnDependencyNode)otherPlug.node()).findPlug("surfaceShader", &res);
+		surfaceShPlug = (surfaceShader).findPlug("surfaceShader", &res);
 		surfaceShPlug.connectedTo(surfaceConnections, true, false, &res);
 		for (unsigned int i = 0; i < surfaceConnections.length(); i++)
 		{
+			int length;
+			char * pek = nullptr;
+
+			//MObject shaderObject = surfaceConnections[i].node();
+			//((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong);
+			derp += ((MFnDependencyNode)surfaceConnections[i].node()).name();
+			if (((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong))
+				MGlobal::displayInfo("PHONG!");
+
+			MGlobal::displayInfo(derp);
+			length = createMaterial((MObject)surfaceConnections[i].node(), ((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong), pek);
 			//derp += "- material name -\n";
 			//derp += ((MFnDependencyNode)surfaceConnections[i].node()).name();
-			setMaterial(((MFnTransform)((MFnMesh)mNode).parent(0)).name(), ((MFnDependencyNode)surfaceConnections[i].node()).name());
+			setMaterial(((MFnTransform)((MFnMesh)mNode).parent(0)).name(), ((MFnDependencyNode)surfaceConnections[i].node()).name(), pek, length);
 		}
 		//derp += "\n- mesh name -\n";
 		//derp+= ((MFnTransform)((MFnMesh)mNode).parent(0)).name();
 
-		//MGlobal::displayInfo(derp);
 		
 	}
 
@@ -993,304 +1330,12 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 //fix adde node funtion so that you just use a function that creates everything/adds callbakcs
 //add topology changed callback
 #pragma endregion
-bool getTextureFileInfo(MObject &shaderNode, MString type, MString &path) //takes a material node, and a type which specifies plugtype (f.ex.: "normalCamera") for wanted texture, returns in &path
-{
-	MStatus res;
-	MPlugArray plugArray;
-	MFnDependencyNode depNode(shaderNode, &res);
 
-	MPlug attrib = depNode.findPlug(type, &res);
-	bool connected = attrib.connectedTo(plugArray, true, false, &res);
-
-	if (res == MS::kSuccess && plugArray.length() > 0)
-	{
-		MObject source = plugArray[0].node();
-
-		MPlug FileTexNamePlug;
-
-		if (source.apiType() == MFn::kFileTexture)
-		{
-			FileTexNamePlug = MFnDependencyNode(source).findPlug("ftn", &res);
-			if (res == MS::kSuccess)
-			{
-				FileTexNamePlug.getValue(path);
-				return true;
-			}
-		}
-
-		MItDependencyGraph dgIt(source,
-			MFn::kFileTexture,
-			MItDependencyGraph::kUpstream,
-			MItDependencyGraph::kBreadthFirst,
-			MItDependencyGraph::kNodeLevel);
-
-		dgIt.disablePruningOnFilter();
-		MFnDependencyNode dgNodeFnSet;
-
-		for (; !dgIt.isDone(); dgIt.next()) {
-
-			MObject thisNode = dgIt.thisNode();
-			dgNodeFnSet.setObject(thisNode);
-
-			MPlug FileTexNamePlug = dgNodeFnSet.findPlug("ftn", &res);
-			if (res == MS::kSuccess)
-			{
-				FileTexNamePlug.getValue(path);
-				return true;
-			}
-		}
-	}
-	else
-	{
-		path = "";
-		return false; //not using a texture
-	}
-	
-	return false;
-}
 
 	
 
 #pragma region Creation
-bool createMaterial(MObject &node, bool isPhong)
-{
-	MStatus res;
 
-	MString paths[tex::TEXTURE_TYPE_COUNT];
-	MainHeader mainHeader{ 3 };
-
-
-	unsigned int length;
-	CreateMaterial mHeader{ 0, 0, 0, 0, 0, isPhong, };
-	ambient amb;
-	diffuse diff;
-	specular spec;
-	MString materialName;
-
-	MGlobal::displayInfo("\nMATERIAL FOUND\n");
-
-	MFnLambertShader lambert(node);
-
-	MString INFO = "NAME: ";
-	INFO += lambert.name();
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-	materialName = lambert.name();
-	mHeader.nameLength = materialName.length();
-
-	if (getTextureFileInfo(node, tex::textureTypes[tex::NORMAL], paths[tex::NORMAL]))
-	{
-		mHeader.normalPathLength = paths[tex::NORMAL].length();
-		MString INFO = "Normal: ";
-		INFO += paths[tex::NORMAL];
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
-	}
-
-	MGlobal::displayInfo("Ambient: ");
-	if (!getTextureFileInfo(node, tex::textureTypes[tex::AMBIENT], paths[tex::AMBIENT]))
-	{
-		
-
-		lambert.ambientColor().get((float*)&amb);
-		INFO += amb.r;
-		INFO += ", ";
-		INFO += amb.g;
-		INFO += ", ";
-		INFO += amb.b;
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
-	}
-	mHeader.ambientPathLength = paths[tex::AMBIENT].length();
-
-	MGlobal::displayInfo("Diffuse: \n");
-	if (!getTextureFileInfo(node, tex::textureTypes[tex::DIFFUSE], paths[tex::DIFFUSE]))
-	{
-		lambert.color().get((float*)&diff);
-		INFO += diff.r;
-		INFO += ", ";
-		INFO += diff.g;
-		INFO += ", ";
-		INFO += diff.b;
-		INFO += ", ";
-	}
-	mHeader.texturePathLength = paths[tex::DIFFUSE].length();
-	INFO += "Color: ";
-	INFO += paths[tex::DIFFUSE];
-	INFO += "\n";
-	diff.coeff = lambert.diffuseCoeff();
-	INFO += "diffuse coefficient : ";
-	INFO += diff.coeff;
-	INFO += ", ";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
-
-
-	if (isPhong)
-	{
-		MGlobal::displayInfo("AND IT HAS PHONG SHIT\n");
-		MFnPhongShader phong(node);
-		
-		MGlobal::displayInfo("Spec:");
-		if (!getTextureFileInfo(node, tex::textureTypes[tex::SPECULAR], paths[tex::SPECULAR]))
-		{
-			mHeader.specularPathlength = paths[tex::SPECULAR].length();
-
-			phong.specularColor().get((float*)&spec);
-			INFO += spec.r;
-			INFO += ", ";
-			INFO += spec.g;
-			INFO += ", ";
-			INFO += spec.b;
-			INFO += "\n";
-			MGlobal::displayInfo(INFO);
-			INFO = "";
-		}
-		mHeader.specularPathlength = paths[tex::SPECULAR].length();
-		spec.shine = phong.cosPower();
-		MGlobal::displayInfo("Shine:");
-		INFO += spec.shine;
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
-
-		//MGlobal::displayInfo("Reflection color:");
-		//INFO += phong.reflectedColor().r;
-		//INFO += ", ";
-		//INFO += phong.reflectedColor().g;
-		//INFO += ", ";
-		//INFO += phong.reflectedColor().b;
-		//INFO += "\n";
-		//MGlobal::displayInfo(INFO);
-		//INFO = "";
-
-		//MGlobal::displayInfo("Reflectivity:");
-		//INFO += phong.reflectivity();
-		//INFO += "\n";
-		//MGlobal::displayInfo(INFO);
-		//INFO = "";
-	}
-
-	//MGlobal::displayInfo("Translucence:");
-	//INFO += lambert.translucenceCoeff();
-	//INFO += "\n";
-	//MGlobal::displayInfo(INFO);
-	//INFO = "";
-
-	//if (!getTextureFileInfo(node, tex::textureTypes[tex::TRANSPARENCY]));
-	//{
-	//	MGlobal::displayInfo("Transparency:");
-	//	INFO += lambert.transparency().r;
-	//	INFO += ", ";
-	//	INFO += lambert.transparency().g;
-	//	INFO += ", ";
-	//	INFO += lambert.transparency().b;
-	//	INFO += "\n";
-	//	MGlobal::displayInfo(INFO);
-	//	INFO = "";
-	//}
-
-	//MGlobal::displayInfo("Glow:");
-	//INFO += lambert.glowIntensity();
-	//INFO += "\n";
-	//MGlobal::displayInfo(INFO);
-	//INFO = "";
-
-	//if (!getTextureFileInfo(node, tex::textureTypes[tex::INCANDESCENCE]));
-	//{
-	//	MGlobal::displayInfo("Incandescence:");
-	//	INFO += lambert.incandescence().r;
-	//	INFO += ", ";
-	//	INFO += lambert.incandescence().g;
-	//	INFO += ", ";
-	//	INFO += lambert.incandescence().b;
-	//	INFO += "\n";
-	//	MGlobal::displayInfo(INFO);
-	//	INFO = "";
-	//} 
-
-
-	//MEMCOPY DIS WOOOOO
-	length = (sizeof(MainHeader)
-		+ sizeof(CreateMaterial)
-		+ mHeader.nameLength + 1
-		+ mHeader.texturePathLength + 1
-		+ mHeader.normalPathLength + 1
-		+ mHeader.ambientPathLength + 1
-		+ mHeader.specularPathlength + 1
-		+ sizeof(ambient)
-		+ sizeof(diffuse)
-		+ sizeof(specular));
-
-	char * pek = msg;
-
-	memcpy(pek, (char*)&mainHeader, sizeof(MainHeader));
-	pek += sizeof(MainHeader);
-
-	memcpy(pek, (char*)&mHeader, sizeof(CreateMaterial));
-	pek += sizeof(CreateMaterial);
-
-
-	//THIS MIGHT WORK IF MSTRING DATA IS STRUCTURED THE WAY IT OUGHT TO BE... MEN SÅ KUL SKULLE VI VISST INTE HA
-	//char * tetas[256];
-	//int nameChunk = (mHeader.nameLength
-	//	+ mHeader.texturePathLength
-	//	+ mHeader.normalPathLength
-	//	+ mHeader.ambientPathLength
-	//	+ mHeader.specularPathlength);
-	//memcpy(pek, (char*)materialName.asChar(), nameChunk);
-	//*tetas = (pek + mHeader.nameLength);
-	//pek += nameChunk;
-
-
-	memcpy(pek, (char*)materialName.asChar(), mHeader.nameLength);
-	pek += mHeader.nameLength + 1;
-
-	memcpy(pek, (char*)paths[tex::DIFFUSE].asChar(), mHeader.texturePathLength);
-	pek += mHeader.texturePathLength + 1;
-
-	memcpy(pek, (char*)paths[tex::NORMAL].asChar(), mHeader.normalPathLength);
-	pek += mHeader.normalPathLength + 1;
-
-	memcpy(pek, (char*)paths[tex::AMBIENT].asChar(), mHeader.ambientPathLength);
-	pek += mHeader.ambientPathLength + 1;
-
-	memcpy(pek, (char*)paths[tex::SPECULAR].asChar(), mHeader.specularPathlength);
-	pek += mHeader.specularPathlength + 1;
-
-	memcpy(pek, (char*)&amb, sizeof(ambient));
-	pek += sizeof(ambient);
-
-	memcpy(pek, (char*)&diff, sizeof(diffuse));
-	pek += sizeof(diffuse);
-
-	memcpy(pek, (char*)&spec, sizeof(specular));
-	pek += sizeof(specular);
-
-	
-
-	while (true)
-	{
-		try
-		{
-			if (producer->push(msg, length))
-			{
-				MGlobal::displayInfo("Sent the mesh to the circular buffer");
-				break;
-			}
-		}
-		catch (...)
-		{
-			Sleep(1);
-		}
-	}
-
-	return true;
-}
 
 bool createMesh(MObject &node)
 {
@@ -1499,12 +1544,23 @@ bool createMesh(MObject &node)
 				{
 					if (connections[j].node().hasFn(MFn::kLambert))
 					{
+						pek = nullptr;
+						length = 0;
 						MFnLambertShader lambertShader(connections[j].node());
 						materialName = lambertShader.name();
-						setMaterial(transform.name(), lambertShader.name());
+
+						length = createMaterial(connections[j].node(), (connections[j].node()).hasFn(MFn::kPhong), pek);
+						setMaterial(transform.name(), lambertShader.name(), pek, length);
 					}
 				}
 			}
+
+
+
+
+
+
+
 			return true;
 		}
 	}
@@ -1814,6 +1870,17 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 			}
 		}*/
 	}
+	if (node.hasFn(MFn::kLambert))
+	{
+		MStatus Result = MS::kSuccess;
+		MCallbackId newId = MNodeMessage::addAttributeChangedCallback(((MFnDependencyNode)node).object(), matAttributeChanged, NULL, &Result);
+		if (Result == MS::kSuccess)
+		{
+			if (!myCallbackArray.append(newId) == MS::kSuccess)
+				MGlobal::displayInfo("failed material callback");
+		}
+	}
+
 }
 #pragma endregion
 EXPORT MStatus initializePlugin(MObject obj)
@@ -1835,9 +1902,12 @@ EXPORT MStatus initializePlugin(MObject obj)
 	MItDependencyNodes materialIt(MFn::kLambert, &res); //FOR CALLBACK USE ATTRIBUTE CHANGED WITH MATERIAL N CHECK PLUG SHIT
 	for (; !materialIt.isDone(); materialIt.next())
 	{
-		MFn::Type currentType = materialIt.thisNode().apiType();
-		createMaterial(materialIt.thisNode(), materialIt.thisNode().hasFn(MFn::kPhong));
-
+		MCallbackId newId = MNodeMessage::addAttributeChangedCallback(((MFnDependencyNode)materialIt.thisNode()).object(), matAttributeChanged, NULL, &loopResults);
+		if (loopResults == MS::kSuccess)
+		{
+			if (!myCallbackArray.append(newId) == MS::kSuccess)
+				MGlobal::displayInfo("failed material callback");
+		}
 	}
 
 	/*adding callback for matrix change in items that already exist*/

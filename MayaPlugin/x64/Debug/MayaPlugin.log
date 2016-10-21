@@ -1,16 +1,1 @@
-﻿  main.cpp
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(662): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(663): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(664): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(665): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(842): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1600): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1601): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1602): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1603): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1660): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1687): warning C4018: '<': signed/unsigned mismatch
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1942): warning C4390: ';': empty controlled statement found; is this the intent?
-c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(66): warning C4715: 'setMaterial': not all control paths return a value
-     Creating library C:\Users\BTH\Desktop\MayaPlugin\x64\Debug\MayaPlugin.lib and object C:\Users\BTH\Desktop\MayaPlugin\x64\Debug\MayaPlugin.exp
-  MayaPlugin.vcxproj -> C:\Users\BTH\Desktop\MayaPlugin\x64\Debug\MayaPlugin.mll
+﻿  MayaPlugin.vcxproj -> C:\Users\BTH\Desktop\MayaPlugin2\x64\Debug\MayaPlugin.mll
