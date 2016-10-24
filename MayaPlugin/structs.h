@@ -70,6 +70,12 @@ struct Vector
 struct sendVertex
 {
 	unsigned int id;
+	unsigned int nrNorm;
+	Vector translation;
+};
+struct sendNormal
+{
+	unsigned int id;
 	Vector translation;
 };
 struct Vector4

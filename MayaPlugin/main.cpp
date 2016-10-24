@@ -1068,11 +1068,19 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 			if (plug.logicalIndex() == mIt.index())
 			{
 				MainHeader mHead{ 5 };
-				MIntArray offsetIdList, indexList;
+				MIntArray offsetIdList, indexList, temp;
 				mMesh.getTriangles(offsetIdList, indexList);
+				mMesh.getTriangleOffsets(temp, offsetIdList);
 				MFnTransform mTran = mMesh.parent(0);
 				modifyVertex mVert{ mTran.name().length(), mIt.count(), indexList.length() };
+				MVectorArray vNormals;
+				MString info;
+				MIntArray normId;
+				mIt.updateSurface();
+				mIt.getNormalIndices(normId);
 
+
+				MGlobal::displayInfo(info);
 				char * pek = msg;
 				size_t length = 0;
 
@@ -1092,16 +1100,48 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 				pek += sizeof(Index)*mVert.indexLength;
 				length += sizeof(Index)*mVert.indexLength;
 
+				memcpy(pek, (char*)&offsetIdList[0], sizeof(Index)*mVert.indexLength);
+				pek += sizeof(Index)*mVert.indexLength;
+				length += sizeof(Index)*mVert.indexLength;
+
 				sendVertex tempSendVert;
+				sendNormal tempSendNormal;
 				for (; !mIt.isDone(); mIt.next())
 				{
+					mIt.getNormals(vNormals);
+					MItMeshFaceVertex fvmIt(item, mIt.currentItem());
+
 					tempSendVert.id = mIt.index();
+					tempSendVert.nrNorm = vNormals.length();
 					tempSendVert.translation = mIt.position();
 					//sendVertex vertInfo{ mIt.index() , mIt.position()};
 
 					memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
 					pek += sizeof(sendVertex);
 					length += sizeof(sendVertex);
+
+					/*verkar skicka samma normaler hela tiden, för att ex. 3 punkter
+					kan alla hålla i samma normal, men det ver inte algoritmen om. Kanske
+					skicka normaler efetr på något sätt?*/
+					/*unsigned int balle = vNormals.length();
+					unsigned int kuk = 0;
+					for (; !fvmIt.isDone(); fvmIt.next())
+					{
+						MString fitta;
+						kuk = fvmIt.faceId();
+						fitta += kuk;
+						MGlobal::displayInfo(fitta);
+					}*/
+					for (int i = 0; i < vNormals.length(); ++i)
+					{
+						tempSendNormal.id = fvmIt.faceId();
+						fvmIt.next();
+						tempSendNormal.translation = vNormals[i];
+						
+						memcpy(pek, (char*)&tempSendNormal, sizeof(sendNormal));
+						pek += sizeof(sendNormal);
+						length += sizeof(sendNormal);
+					}
 				}
 
 				//MGlobal::displayInfo("done!");
@@ -1111,7 +1151,17 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 		else if (component.apiType() == MFn::kMeshPolygonComponent)
 		{
 			MItMeshPolygon pIt(item, component);
+			
 			//unsigned int balle;
+			//MItMeshVertex mIt(item, MFnTransform(component).parent(0));
+			/*for (; !mIt.isDone(); mIt.next())
+			{
+				unsigned int balle = 0;
+				balle = mIt.index();
+				MString kuk = "";
+				kuk += balle;
+				MGlobal::displayInfo(kuk);
+			}*/
 			MIntArray idArr;
 			//balle = plug.logicalIndex();
 			pIt.getVertices(idArr);
@@ -1119,11 +1169,11 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 
 			if (plug.logicalIndex() == idArr[0])
 			{
-				MItMeshVertex mIt(item, pIt.currentItem());
 				char * pek = msg;
 				MainHeader mHead{ 5 };
-				MIntArray offsetIdList, indexList;
+				MIntArray offsetIdList, indexList, temp;
 				mMesh.getTriangles(offsetIdList, indexList);
+				mMesh.getTriangleOffsets(temp, offsetIdList);
 				MFnTransform mTran = mMesh.parent(0);
 				modifyVertex mVert{ mTran.name().length(), 0, indexList.length() };
 				size_t length = 0;
@@ -1143,19 +1193,86 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 				memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
 				pek += sizeof(Index)*mVert.indexLength;
 				length += sizeof(Index)*mVert.indexLength;
-				
 
+				memcpy(pek, (char*)&offsetIdList[0], sizeof(Index)*mVert.indexLength);
+				pek += sizeof(Index)*mVert.indexLength;
+				length += sizeof(Index)*mVert.indexLength;
+				
+				//sendVertex tempSendVert;
 				sendVertex tempSendVert;
 				for (; !pIt.isDone(); pIt.next())
 				{
 					MPointArray pointz;
-					
+					MVectorArray vNormals;
+
 					pIt.getPoints(pointz);
 					pIt.getVertices(idArr);
+					//pIt.getNormals(normals);
+					//offsetIdList.fin
+					int terr = 0;
+
+					MItMeshVertex mIt(item, MFnMesh(component).child(0));
+					//mIt.setIndex(10, terr);
+					for (int i = 0; i < idArr.length(); ++i)
+					{
+						mIt.setIndex(idArr[i], terr);
+						mIt.getNormals(vNormals);
+						MItMeshFaceVertex fvmIt(item, mIt.currentItem());
+
+						tempSendVert.id = mIt.index();
+						tempSendVert.nrNorm = vNormals.length();
+						tempSendVert.translation = mIt.position();
+						//sendVertex vertInfo{ mIt.index() , mIt.position()};
+
+						memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+						pek += sizeof(sendVertex);
+						length += sizeof(sendVertex);
+
+						sendNormal tempSendNormal;
+						for (int i = 0; i < vNormals.length(); ++i)
+						{
+							tempSendNormal.id = fvmIt.faceId();
+							fvmIt.next();
+							tempSendNormal.translation = vNormals[i];
+
+							memcpy(pek, (char*)&tempSendNormal, sizeof(sendNormal));
+							pek += sizeof(sendNormal);
+							length += sizeof(sendNormal);
+						}
+						MString indo;
+						indo += mIt.index();
+						MGlobal::displayInfo(indo);
+						mVert.nrOfVertices++;
+					}
+
+					/*for (int i = 0; i < normals.length(); ++i)
+					{
+						MString info;
+						info += normals[i].x;
+						info += ", ";
+						info += normals[i].y;
+						info += ", ";
+						info += normals[i].z;
+						info += "; ";
+						MGlobal::displayInfo(info);
+					}*/
+					
+
+					/*pIt.getTriangles(ldvdvdvdv, test);
+					for (int i = 0; i < test.length(); ++i)
+					{
+						unsigned int bajs = offsetIdList[test[i]];
+						MString kuk;
+						kuk += bajs;
+						MGlobal::displayInfo(kuk);
+					}*/
+					
 					//unsigned int bajs = knulla.length();
 					//MString info;
 					//MGlobal::displayInfo(info);
-					for (int i = 0; i < pointz.length(); ++i)
+					
+
+					/*for (int i = 0; i < pointz.length(); ++i)
 					{
 						tempSendVert.id = idArr[i];
 						tempSendVert.translation.x = pointz[i].x;
@@ -1166,7 +1283,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 						pek += sizeof(sendVertex);
 						length += sizeof(sendVertex);
 						mVert.nrOfVertices++;
-					}
+					}*/
 				}
 
 				memcpy((msg + sizeof(MainHeader)), (char*)&mVert, sizeof(modifyVertex));
