@@ -1012,21 +1012,50 @@ bool updateCamera()
 void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
 	MString RUMPA;
-	MObject object = plug.node();
+	MFnDependencyNode pobject = plug.node();
+	MFnDependencyNode pobject2 = otherPlug.node();
 
+	
+	
+
+	//MGlobal::displayInfo("DEp PLUG: ");
+	//MGlobal::displayInfo(pobject.name());
+	//MGlobal::displayInfo("DEP OTHERPLUG: ");
+	//MGlobal::displayInfo(pobject2.name());
+
+	
 
 	if ((Amsg == (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection) ||
 		Amsg == (Amsg & MNodeMessage::kConnectionBroken | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet) ||
 		Amsg == (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) && 
-		object.apiType() )
+		((MObject)plug.node()).hasFn(MFn::kLambert))
 
 	{
+
+		MGlobal::displayInfo("API PLUG: ");
+		MGlobal::displayInfo(((MObject)plug.node()).apiTypeStr());
+		MGlobal::displayInfo("API OTHERPLUG: ");
+		MGlobal::displayInfo(((MObject)otherPlug.node()).apiTypeStr());
+
+		MStatus res;
+		MString materialName = pobject.name();
 		//find connected meshes....
 		MGlobal::displayInfo("----- FIND MESHES -----");
-		MFnLambertShader materialObj = plug.node();
+		MFnLambertShader MfShader = plug.node();
 
-		RUMPA += materialObj.name();
-		RUMPA += "\n";
+		MPlugArray connections;
+		MPlug outColorPlug = MfShader.findPlug("outColor");
+
+		outColorPlug.connectedTo(connections, false, true, &res);
+		int BAJS = connections.length();
+
+		for (int i = 0; i < connections.length(); i++)
+		{
+			MFnDependencyNode surfaceShader = connections[i].node();
+
+			MGlobal::displayInfo(surfaceShader.name());
+		}
+
 
 		if (Amsg == (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection)) //ATTRIBUTE
 		{
