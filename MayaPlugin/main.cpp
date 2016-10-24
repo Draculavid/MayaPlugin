@@ -1015,9 +1015,6 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 	MFnDependencyNode pobject = plug.node();
 	MFnDependencyNode pobject2 = otherPlug.node();
 
-	
-	
-
 	//MGlobal::displayInfo("DEp PLUG: ");
 	//MGlobal::displayInfo(pobject.name());
 	//MGlobal::displayInfo("DEP OTHERPLUG: ");
@@ -1029,13 +1026,7 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		Amsg == (Amsg & MNodeMessage::kConnectionBroken | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet) ||
 		Amsg == (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) && 
 		((MObject)plug.node()).hasFn(MFn::kLambert))
-
 	{
-
-		MGlobal::displayInfo("API PLUG: ");
-		MGlobal::displayInfo(((MObject)plug.node()).apiTypeStr());
-		MGlobal::displayInfo("API OTHERPLUG: ");
-		MGlobal::displayInfo(((MObject)otherPlug.node()).apiTypeStr());
 
 		MStatus res;
 		MString materialName = pobject.name();
@@ -1052,8 +1043,30 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		for (int i = 0; i < connections.length(); i++)
 		{
 			MFnDependencyNode surfaceShader = connections[i].node();
-
 			MGlobal::displayInfo(surfaceShader.name());
+
+			MPlugArray setMembConnections;
+			MPlug dagSetMembPlugDADDY = surfaceShader.findPlug("dagSetMembers");
+
+			for (unsigned int k = 0; k < dagSetMembPlugDADDY.numElements(); k++)
+			{
+				dagSetMembPlugDADDY[k].connectedTo(setMembConnections, true, false, &res);
+				for (unsigned int j = 0; j < setMembConnections.length(); j++)//(-1 för att inte itterera hypergraph bollen)
+				{
+					//RUMPA += (setMembConnections[i].node()).child(0);
+					MString meshName = ((MFnTransform)((MFnMesh)setMembConnections[i].node()).parent(0)).name();
+					if (strcmp(meshName.asChar(), "shaderBallGeom1") != 0)
+					{
+						int length;
+						char * pek;
+						RUMPA += meshName;
+
+						//length = createMaterial((MObject)surfaceConnections[i].node(), ((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong), pek);
+						length = createMaterial((MObject)plug.node(), ((MObject)plug.node()).hasFn(MFn::kPhong), pek);
+						setMaterial(meshName, materialName, pek, length);
+					}
+				}
+			}
 		}
 
 
@@ -1061,8 +1074,8 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		{
 			RUMPA += "ATRUBBUTE!\n";
 			RUMPA += plug.name();
-			RUMPA += "\n";
-			RUMPA += otherPlug.name();
+			//RUMPA += "\n";
+			//RUMPA += otherPlug.name();
 
 		}
 

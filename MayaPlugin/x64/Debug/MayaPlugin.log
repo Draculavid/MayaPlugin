@@ -1,17 +1,16 @@
 ﻿  main.cpp
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(959): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(960): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(961): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(962): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1051): warning C4018: '<': signed/unsigned mismatch
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1231): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1708): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1709): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1710): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1711): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1768): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(1795): warning C4018: '<': signed/unsigned mismatch
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(2064): warning C4390: ';': empty controlled statement found; is this the intent?
-c:\users\soetfisk\documents\visual studio 2015\projects\mayaplugin\mayaplugin\main.cpp(363): warning C4715: 'setMaterial': not all control paths return a value
-  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.mll
-  MayaPlugin.vcxproj -> C:\Users\Soetfisk\Documents\Visual Studio 2015\Projects\MayaPlugin\x64\Debug\MayaPlugin.pdb (Full PDB)
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(959): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(960): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(961): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(962): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1043): warning C4018: '<': signed/unsigned mismatch
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1245): warning C4838: conversion from 'int' to 'unsigned int' requires a narrowing conversion
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1722): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1723): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1724): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1725): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1782): warning C4838: conversion from 'unsigned int' to 'int' requires a narrowing conversion
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(1809): warning C4018: '<': signed/unsigned mismatch
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(2078): warning C4390: ';': empty controlled statement found; is this the intent?
+c:\users\bth\desktop\mayaplugin\mayaplugin\main.cpp(363): warning C4715: 'setMaterial': not all control paths return a value
+  MayaPlugin.vcxproj -> C:\Users\BTH\Desktop\MayaPlugin\x64\Debug\MayaPlugin.mll
