@@ -602,7 +602,7 @@ void preRenderCB(const MString& panelName, void * data)
 	if (lastCamera == "")
 		lastCamera = panelName;
 	//lastCamera = &panelName;
-	MGlobal::displayInfo("changed somethingaaskfnalvnevoåiaernv");
+	//MGlobal::displayInfo("changed somethingaaskfnalvnevoåiaernv");
 	if (cameraMovement || lastCamera != panelName)
 	{
 		if (lastCamera != panelName)
@@ -1031,9 +1031,15 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 	}
 	//if (Amsg & MNodeMessage::kLast)
 	//MGlobal::displayInfo("knulla röv");
+	MGlobal::displayInfo(plug.name());
+	MObject mTest = plug.asMObject();
 	MSelectionList sList;
 	MGlobal::getActiveSelectionList(sList);
 	//MPlug tempPlug;
+	if (plug.asMObject().apiType() == MFn::kMeshData && Amsg & MNodeMessage::kIncomingDirection)
+	{
+		MGlobal::displayInfo("face moving");
+	}
 	MItSelectionList iter(sList);
 	if (Amsg & MNodeMessage::kAttributeSet && !plug.isArray() && plug.isElement())
 	{
@@ -1105,33 +1111,28 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 		else if (component.apiType() == MFn::kMeshPolygonComponent)
 		{
 			MItMeshPolygon pIt(item, component);
-			if (plug.logicalIndex() == pIt.index())
+			//unsigned int balle;
+			MIntArray idArr;
+			//balle = plug.logicalIndex();
+			pIt.getVertices(idArr);
+			//balle = idArr[0];
+
+			if (plug.logicalIndex() == idArr[0])
 			{
 				MItMeshVertex mIt(item, pIt.currentItem());
-				for (; !pIt.isDone(); pIt.next())
-				{
-					MPointArray pointz;
-					MIntArray knulla;
-					pIt.getPoints(pointz);
-					pIt.getVertices(knulla);
-					unsigned int bajs = knulla.length();
-					MString info;
-					MGlobal::displayInfo(info);
-				}
+				char * pek = msg;
 				MainHeader mHead{ 5 };
 				MIntArray offsetIdList, indexList;
 				mMesh.getTriangles(offsetIdList, indexList);
 				MFnTransform mTran = mMesh.parent(0);
-				modifyVertex mVert{ mTran.name().length(), mIt.count(), indexList.length() };
-
-				char * pek = msg;
+				modifyVertex mVert{ mTran.name().length(), 0, indexList.length() };
 				size_t length = 0;
 
 				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				pek += sizeof(MainHeader);
 				length += sizeof(MainHeader);
 
-				memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
+				//memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
 				pek += sizeof(modifyVertex);
 				length += sizeof(modifyVertex);
 
@@ -1142,18 +1143,45 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 				memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
 				pek += sizeof(Index)*mVert.indexLength;
 				length += sizeof(Index)*mVert.indexLength;
+				
 
 				sendVertex tempSendVert;
-				for (; !mIt.isDone(); mIt.next())
+				for (; !pIt.isDone(); pIt.next())
 				{
-					tempSendVert.id = mIt.index();
-					tempSendVert.translation = mIt.position();
-					//sendVertex vertInfo{ mIt.index() , mIt.position()};
+					MPointArray pointz;
+					
+					pIt.getPoints(pointz);
+					pIt.getVertices(idArr);
+					//unsigned int bajs = knulla.length();
+					//MString info;
+					//MGlobal::displayInfo(info);
+					for (int i = 0; i < pointz.length(); ++i)
+					{
+						tempSendVert.id = idArr[i];
+						tempSendVert.translation.x = pointz[i].x;
+						tempSendVert.translation.y = pointz[i].y;
+						tempSendVert.translation.z = pointz[i].z;
 
-					memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
-					pek += sizeof(sendVertex);
-					length += sizeof(sendVertex);
+						memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+						pek += sizeof(sendVertex);
+						length += sizeof(sendVertex);
+						mVert.nrOfVertices++;
+					}
 				}
+
+				memcpy((msg + sizeof(MainHeader)), (char*)&mVert, sizeof(modifyVertex));
+
+
+				//for (; !mIt.isDone(); mIt.next())
+				//{
+				//	tempSendVert.id = mIt.index();
+				//	tempSendVert.translation = mIt.position();
+				//	//sendVertex vertInfo{ mIt.index() , mIt.position()};
+
+				//	memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+				//	pek += sizeof(sendVertex);
+				//	length += sizeof(sendVertex);
+				//}
 
 				//MGlobal::displayInfo("done!");
 				producer->push(msg, length);
