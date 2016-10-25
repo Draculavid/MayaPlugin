@@ -31,6 +31,7 @@ struct modifyVertex
 	unsigned int nameLength;
 	unsigned int nrOfVertices;
 	unsigned int indexLength;
+	unsigned int normalIdLength;
 };
 struct CreateCamera
 {
@@ -70,11 +71,27 @@ struct Vector//vectors are shit
 struct sendVertex
 {
 	unsigned int id;
+	unsigned int nrNorm;
+	Vector translation;
+};
+struct sendNormal
+{
+	unsigned int id;
 	Vector translation;
 };
 struct Vector4
 {
 	float x, y, z, w;
+};
+struct sendPersp
+{
+	Vector translation;
+	Vector4 rotation;
+};
+struct sendOrtho
+{
+	Vector translation;
+	double orthoWidth;
 };
 #pragma region MaterialStructs
 struct CreateMaterial
