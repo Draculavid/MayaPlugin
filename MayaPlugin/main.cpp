@@ -275,11 +275,11 @@ int createMaterial(MObject &node, bool isPhong, char *& pek)
 
 	pek = msg;
 
-	memcpy(pek, (char*)&mainHeader, sizeof(MainHeader));
+	std::memcpy(pek, (char*)&mainHeader, sizeof(MainHeader));
 	pek += sizeof(MainHeader);
 
 
-	memcpy(pek, (char*)&mHeader, sizeof(CreateMaterial));
+	std::memcpy(pek, (char*)&mHeader, sizeof(CreateMaterial));
 	pek += sizeof(CreateMaterial);
 
 
@@ -291,34 +291,34 @@ int createMaterial(MObject &node, bool isPhong, char *& pek)
 	//	+ mHeader.normalPathLength
 	//	+ mHeader.ambientPathLength
 	//	+ mHeader.specularPathlength);
-	//memcpy(pek, (char*)materialName.asChar(), nameChunk);
+	//std::memcpy(pek, (char*)materialName.asChar(), nameChunk);
 	//*tetas = (pek + mHeader.nameLength);
 	//pek += nameChunk;
 
-	memcpy(pek, (char*)materialName.asChar(), mHeader.nameLength);
+	std::memcpy(pek, (char*)materialName.asChar(), mHeader.nameLength);
 	pek += mHeader.nameLength + 1;
 
-	memcpy(pek, (char*)paths[tex::DIFFUSE].asChar(), mHeader.texturePathLength);
+	std::memcpy(pek, (char*)paths[tex::DIFFUSE].asChar(), mHeader.texturePathLength);
 	pek += mHeader.texturePathLength + 1;
 
-	memcpy(pek, (char*)paths[tex::NORMAL].asChar(), mHeader.normalPathLength);
+	std::memcpy(pek, (char*)paths[tex::NORMAL].asChar(), mHeader.normalPathLength);
 	pek += mHeader.normalPathLength + 1;
 
-	memcpy(pek, (char*)paths[tex::AMBIENT].asChar(), mHeader.ambientPathLength);
+	std::memcpy(pek, (char*)paths[tex::AMBIENT].asChar(), mHeader.ambientPathLength);
 	pek += mHeader.ambientPathLength + 1;
 
-	memcpy(pek, (char*)paths[tex::SPECULAR].asChar(), mHeader.specularPathlength);
+	std::memcpy(pek, (char*)paths[tex::SPECULAR].asChar(), mHeader.specularPathlength);
 	pek += mHeader.specularPathlength + 1;
 
-	memcpy(pek, (char*)&amb, sizeof(ambient));
+	std::memcpy(pek, (char*)&amb, sizeof(ambient));
 	pek += sizeof(ambient);
 
-	memcpy(pek, (char*)&diff, sizeof(diffuse));
+	std::memcpy(pek, (char*)&diff, sizeof(diffuse));
 	pek += sizeof(diffuse);
 
 	if (mHeader.specular)
 	{
-		memcpy(pek, (char*)&spec, sizeof(specular));
+		std::memcpy(pek, (char*)&spec, sizeof(specular));
 		pek += sizeof(specular);
 	}
 
@@ -348,16 +348,16 @@ bool setMaterial(MString&mesh, MString&material, char *& pek, int length)
 	length += /*sizeof(MainHeader) +*/ sizeof(setMat) + hSetMat.meshNameLength + hSetMat.materialNameLength;
 	
 
-	//memcpy(pek, &mHead, sizeof(unsigned int));
+	//std::memcpy(pek, &mHead, sizeof(unsigned int));
 	//pek += sizeof(unsigned int);
 
-	memcpy(pek, &hSetMat, sizeof(setMat));
+	std::memcpy(pek, &hSetMat, sizeof(setMat));
 	pek += sizeof(setMat);
 
-	memcpy(pek, mesh.asChar(), hSetMat.meshNameLength);
+	std::memcpy(pek, mesh.asChar(), hSetMat.meshNameLength);
 	pek += hSetMat.meshNameLength;
 
-	memcpy(pek, material.asChar(), hSetMat.materialNameLength);
+	std::memcpy(pek, material.asChar(), hSetMat.materialNameLength);
 
 	if (producer->push(msg, length))
 
@@ -410,19 +410,19 @@ bool setMaterial(MString&mesh, MString&material, char *& pek, int length)
 //		
 //
 //		 		char * pek = msg;
-//				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+//				std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 //				pek += sizeof(MainHeader);
 //		
 //
-//		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+//		 		std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 //				pek += sizeof(Transformation);
 //		
 //
-//		 		memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+//		 		std::memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 //				pek += mTransform.nameLength;
 //		
 //
-//		 		memcpy(pek, (char*)&sScale, sizeof(Vector));
+//		 		std::memcpy(pek, (char*)&sScale, sizeof(Vector));
 //				pek += sizeof(Vector);
 //		
 //
@@ -468,19 +468,19 @@ bool setMaterial(MString&mesh, MString&material, char *& pek, int length)
 //		
 //
 //		 		char * pek = msg;
-//				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+//				std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 //				pek += sizeof(MainHeader);
 //		
 //
-//		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+//		 		std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 //				pek += sizeof(Transformation);
 //		
 //
-//		 		memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+//		 		std::memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 //				pek += mTransform.nameLength;
 //		
 //
-//		 		memcpy(pek, (char*)&sRot, sizeof(Vector4));
+//		 		std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 //				pek += sizeof(Vector);
 //		
 //
@@ -519,19 +519,19 @@ bool setMaterial(MString&mesh, MString&material, char *& pek, int length)
 //				MGlobal::displayInfo(info);
 //
 //		 		char * pek = msg;
-//				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+//				std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 //				pek += sizeof(MainHeader);
 //		
 //
-//		 		memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+//		 		std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 //				pek += sizeof(Transformation);
 //		
 //
-//				memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+//				std::memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 //				pek += mTransform.nameLength;
 //		
 //
-//				memcpy(pek, (char*)&sTran, sizeof(Vector));
+//				std::memcpy(pek, (char*)&sTran, sizeof(Vector));
 //				pek += sizeof(Vector);
 //		
 //
@@ -605,14 +605,14 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				if (modified & MDagMessage::kScale)
 				{
 					char * pek = msg;
-					memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+					std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 					pek += sizeof(MainHeader);
 
 					Transformation mTransform{ sList.length() , 0 };
 					size_t length = 0;
 					unsigned int nameLength = 0;
 
-					memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+					std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 					pek += sizeof(Transformation);
 
 
@@ -630,11 +630,11 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							//sList.getDagPath(i, nodePath);
 							nameLength = trans.name().length();
 
-							memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 							pek += sizeof(unsigned int);
 							length += sizeof(unsigned int);
 
-							memcpy(pek, trans.name().asChar(), nameLength);
+							std::memcpy(pek, trans.name().asChar(), nameLength);
 							pek += nameLength;
 							length += nameLength;
 
@@ -644,7 +644,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							trans.getScale(tempScale);
 							sScale = tempScale;
 
-							memcpy(pek, (char*)&sScale, sizeof(Vector));
+							std::memcpy(pek, (char*)&sScale, sizeof(Vector));
 							pek += sizeof(Vector);
 							length += sizeof(Vector);
 						}
@@ -663,11 +663,11 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							//sList.getDagPath(i, nodePath);
 							nameLength = trans.name().length();
 
-							memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 							pek += sizeof(unsigned int);
 							length += sizeof(unsigned int);
 
-							memcpy(pek, trans.name().asChar(), nameLength);
+							std::memcpy(pek, trans.name().asChar(), nameLength);
 							pek += nameLength;
 							length += nameLength;
 
@@ -677,7 +677,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							trans.getScale(tempScale);
 							sScale = tempScale;
 
-							memcpy(pek, (char*)&sScale, sizeof(Vector));
+							std::memcpy(pek, (char*)&sScale, sizeof(Vector));
 							pek += sizeof(Vector);
 							length += sizeof(Vector);
 						}
@@ -705,14 +705,14 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					//	+ mTransform.nameLength
 					//	+ sizeof(Vector4);
 					char * pek = msg;
-					memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+					std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 					pek += sizeof(MainHeader);
 
 					Transformation mTransform{ sList.length() , 1 };
 					size_t length = 0;
 					unsigned int nameLength = 0;
 
-					memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+					std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 					pek += sizeof(Transformation);
 
 					//double tempRot[4]; Vector4 sRot;
@@ -723,7 +723,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					//sRot.z = (float)tempRot[2];
 					//sRot.w = (float)tempRot[3];
 
-					/*memcpy(pek, (char*)&sRot, sizeof(Vector4));
+					/*std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 					pek += sizeof(Vector);*/
 					if (mNode.apiType() == MFn::kTransform)
 					{
@@ -736,11 +736,11 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							//sList.getDagPath(i, nodePath);
 							nameLength = trans.name().length();
 
-							memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 							pek += sizeof(unsigned int);
 							length += sizeof(unsigned int);
 
-							memcpy(pek, trans.name().asChar(), nameLength);
+							std::memcpy(pek, trans.name().asChar(), nameLength);
 							pek += nameLength;
 							length += nameLength;
 
@@ -752,7 +752,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							sRot.z = (float)tempRot[2];
 							sRot.w = (float)tempRot[3];
 
-							memcpy(pek, (char*)&sRot, sizeof(Vector4));
+							std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 							pek += sizeof(Vector4);
 							length += sizeof(Vector4);
 						}
@@ -768,11 +768,11 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							//sList.getDagPath(i, nodePath);
 							nameLength = trans.name().length();
 
-							memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 							pek += sizeof(unsigned int);
 							length += sizeof(unsigned int);
 
-							memcpy(pek, trans.name().asChar(), nameLength);
+							std::memcpy(pek, trans.name().asChar(), nameLength);
 							pek += nameLength;
 							length += nameLength;
 
@@ -784,7 +784,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							sRot.z = (float)tempRot[2];
 							sRot.w = (float)tempRot[3];
 
-							memcpy(pek, (char*)&sRot, sizeof(Vector4));
+							std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 							pek += sizeof(Vector4);
 							length += sizeof(Vector4);
 						}
@@ -797,13 +797,13 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					//+ sizeof(Vector4);
 				/*this will also vary*/
 				//char * pek = msg;
-				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				//std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				//pek += sizeof(MainHeader);
 
-				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				//std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 				//pek += sizeof(Transformation);
 
-				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				//std::memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 				//pek += mTransform.nameLength;
 
 
@@ -823,19 +823,19 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					//	+ sizeof(Vector);
 
 					char * pek = msg;
-					memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+					std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 					pek += sizeof(MainHeader);
 
 					Transformation mTransform{ sList.length() , 2 };
 					size_t length = 0;
 					unsigned int nameLength = 0;
 
-					memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+					std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 					pek += sizeof(Transformation);
 
 
 
-					/*memcpy(pek, (char*)&sTran, sizeof(Vector));
+					/*std::memcpy(pek, (char*)&sTran, sizeof(Vector));
 					pek += sizeof(Vector);*/
 					//MTransformationMatrix test = trans.transformation();
 					//MString kuken;
@@ -849,18 +849,18 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 							nameLength = trans.name().length();
 
-							memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 							pek += sizeof(unsigned int);
 							length += sizeof(unsigned int);
 
-							memcpy(pek, trans.name().asChar(), nameLength);
+							std::memcpy(pek, trans.name().asChar(), nameLength);
 							pek += nameLength;
 							length += nameLength;
 
 							Vector sTran;
 							sTran = trans.getTranslation(MSpace::kTransform, NULL);
 
-							memcpy(pek, (char*)&sTran, sizeof(Vector));
+							std::memcpy(pek, (char*)&sTran, sizeof(Vector));
 							pek += sizeof(Vector);
 							length += sizeof(Vector);
 						}
@@ -875,18 +875,18 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 							nameLength = trans.name().length();
 
-							memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 							pek += sizeof(unsigned int);
 							length += sizeof(unsigned int);
 
-							memcpy(pek, trans.name().asChar(), nameLength);
+							std::memcpy(pek, trans.name().asChar(), nameLength);
 							pek += nameLength;
 							length += nameLength;
 
 							Vector sTran;
 							sTran = trans.getTranslation(MSpace::kTransform, NULL);
 
-							memcpy(pek, (char*)&sTran, sizeof(Vector));
+							std::memcpy(pek, (char*)&sTran, sizeof(Vector));
 							pek += sizeof(Vector);
 							length += sizeof(Vector);
 						}
@@ -900,13 +900,13 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 				/*this will also vary*/
 				//char * pek = msg;
-				//memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				//std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				//pek += sizeof(MainHeader);
 
-				//memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+				//std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 				//pek += sizeof(Transformation);
 
-				//memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
+				//std::memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
 				//pek += mTransform.nameLength;
 
 
@@ -951,8 +951,8 @@ void preRenderCB(const MString& panelName, void * data)
 				+ sizeof(float)
 				+ sizeof(Vector4);
 
-			
-			
+
+
 			float orthoWidth = sCamera.orthoWidth();
 			Vector sTrans;
 			Vector4 sRot; double tempRot[4];
@@ -964,19 +964,19 @@ void preRenderCB(const MString& panelName, void * data)
 			sRot.w = tempRot[3];
 
 			char * pek = msg;
-			memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+			std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 			pek += sizeof(MainHeader);
 
-			memcpy(pek, (char*)&isOrtho, sizeof(bool));
+			std::memcpy(pek, (char*)&isOrtho, sizeof(bool));
 			pek += sizeof(bool);
 
-			memcpy(pek, (char*)&sRot, sizeof(Vector4));
+			std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 			pek += sizeof(Vector4);
 
-			memcpy(pek, (char*)&sTrans, sizeof(Vector));
+			std::memcpy(pek, (char*)&sTrans, sizeof(Vector));
 			pek += sizeof(Vector);
 
-			memcpy(pek, (char*)&orthoWidth, sizeof(float));
+			std::memcpy(pek, (char*)&orthoWidth, sizeof(float));
 
 			cameraMovement = false;
 			producer->push(msg, length);
@@ -1003,26 +1003,28 @@ void preRenderCB(const MString& panelName, void * data)
 			sTrans = transform.getTranslation(MSpace::kTransform, NULL);
 
 			char * pek = msg;
-			memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+			std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 			pek += sizeof(MainHeader);
 
-			memcpy(pek, (char*)&isOrtho, sizeof(bool));
+			std::memcpy(pek, (char*)&isOrtho, sizeof(bool));
 			pek += sizeof(bool);
 
-			memcpy(pek, (char*)&sRot, sizeof(Vector4));
+			std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 			pek += sizeof(Vector4);
 
-			memcpy(pek, (char*)&sTrans, sizeof(Vector));
+			std::memcpy(pek, (char*)&sTrans, sizeof(Vector));
 
-			//memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+			//std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 			//pek += sizeof(unsigned int);
 
 
 			cameraMovement = false;
 			producer->push(msg, length);
 		}
-		
+
 		////MGlobal::displayInfo(transform.name() + " worldmatrix changed");
+	}
+}
 void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
 	MString RUMPA;
@@ -1034,11 +1036,11 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 	//MGlobal::displayInfo("DEP OTHERPLUG: ");
 	//MGlobal::displayInfo(pobject2.name());
 
-	
+
 
 	if ((Amsg == (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection) ||
 		Amsg == (Amsg & MNodeMessage::kConnectionBroken | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet) ||
-		Amsg == (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) && 
+		Amsg == (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) &&
 		((MObject)plug.node()).hasFn(MFn::kLambert))
 	{
 
@@ -1109,10 +1111,10 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 			RUMPA += otherPlug.name();
 
 		}
-	
+
 	}
 	MGlobal::displayInfo(RUMPA);
-}
+
 
 #pragma region material stuff
 
@@ -1126,17 +1128,17 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 	if ((Amsg & MNodeMessage::kConnectionMade && Amsg & MNodeMessage::kOtherPlugSet))
 	{
 		MGlobal::displayInfo("\n----- Changed Material -----\n");
-		
+
 		MPlug surfaceShPlug, maOtherPlug;
 		MPlugArray surfaceConnections;
 
 		MObject mNode = plug.node();
 		MFnDependencyNode surfaceShader = otherPlug.node();
-		
-	
+
+
 
 		MString derp;
-		
+
 
 		surfaceShPlug = (surfaceShader).findPlug("surfaceShader", &res);
 		surfaceShPlug.connectedTo(surfaceConnections, true, false, &res);
@@ -1160,7 +1162,7 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		//derp += "\n- mesh name -\n";
 		//derp+= ((MFnTransform)((MFnMesh)mNode).parent(0)).name();
 
-		
+
 	}
 
 	//MObjectArray shaders;
@@ -1222,40 +1224,39 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		//	unsigned int perspL = mPersp.length();
 
 		//	char * pek = msg;
-		//	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+		//	std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 		//	pek += sizeof(MainHeader);
 
-		//	memcpy(pek, (char*)&mTransform, sizeof(Transformation));
+		//	std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
 		//	pek += sizeof(Transformation);
 
-		//	memcpy(pek, (char*)&perspL, sizeof(unsigned int));
+		//	std::memcpy(pek, (char*)&perspL, sizeof(unsigned int));
 		//	pek += sizeof(unsigned int);
 
-		//	memcpy(pek, (char*)mPersp.asChar(), perspL);
+		//	std::memcpy(pek, (char*)mPersp.asChar(), perspL);
 		//	pek += perspL;
 
-		//	/*memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		//	/*std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 		//	pek += sizeof(unsigned int);
 
-		//	memcpy(pek, (char*)transform.name().asChar(), nameLength);
+		//	std::memcpy(pek, (char*)transform.name().asChar(), nameLength);
 		//	pek += nameLength;*/
 
-		//	memcpy(pek, (char*)&sScale, sizeof(Vector));
+		//	std::memcpy(pek, (char*)&sScale, sizeof(Vector));
 		//	pek += sizeof(Vector);
 
-		//	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+		//	std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 		//	pek += sizeof(Vector4);
 
-		//	memcpy(pek, (char*)&sTrans, sizeof(Vector));
+		//	std::memcpy(pek, (char*)&sTrans, sizeof(Vector));
 
-		//	//memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+		//	//std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
 		//	//pek += sizeof(unsigned int);
 
 
 		//	cameraMovement = false;
 		//	producer->push(msg, length); 
-			
-	}
+
 }
 
 bool updateCamera()
@@ -1409,49 +1410,49 @@ bool createMesh(MObject &node)
 			/*constructing the message*/
 			char * pek = msg;
 
-			memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
+			std::memcpy(pek, (char*)&sHeader, sizeof(MainHeader));
 			pek += sizeof(MainHeader);
 
-			memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
+			std::memcpy(pek, (char*)&sMesh, sizeof(CreateMesh));
 			pek += sizeof(CreateMesh);
 
-			memcpy(pek, transform.name().asChar(), sMesh.nameLength);
+			std::memcpy(pek, transform.name().asChar(), sMesh.nameLength);
 			pek += sMesh.nameLength;
 
-			memcpy(pek, (char*)&sScal, sizeof(Vector));
+			std::memcpy(pek, (char*)&sScal, sizeof(Vector));
 			pek += sizeof(Vector);
 
-			memcpy(pek, (char*)&sRot, sizeof(Vector4));
+			std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 			pek += sizeof(Vector4);
 
-			memcpy(pek, (char*)&sTran, sizeof(Vector));
+			std::memcpy(pek, (char*)&sTran, sizeof(Vector));
 			pek += sizeof(Vector);
 
-			memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
+			std::memcpy(pek, (char*)mMesh.getRawPoints(NULL), (sizeof(Vertex)*sMesh.vertexCount));
 			pek += sizeof(Vertex)*sMesh.vertexCount;
 
-			memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
+			std::memcpy(pek, (char*)&indexList[0], (sizeof(Index)*sMesh.indexCount));
 			pek += sizeof(Index)*sMesh.indexCount;
 
-			memcpy(pek, (char*)mMesh.getRawNormals(NULL), (sizeof(Normals)*sMesh.normalCount));
+			std::memcpy(pek, (char*)mMesh.getRawNormals(NULL), (sizeof(Normals)*sMesh.normalCount));
 			pek += sizeof(Normals)*sMesh.normalCount;
 
-			memcpy(pek, (char*)&normalId[0], (sizeof(Index) * sMesh.normalIndexCount));
+			std::memcpy(pek, (char*)&normalId[0], (sizeof(Index) * sMesh.normalIndexCount));
 			pek += sizeof(Index)*sMesh.normalIndexCount;
 
-			memcpy(pek, (char*)&offsetIdList[0], (sizeof(Index)*sMesh.indexCount));
+			std::memcpy(pek, (char*)&offsetIdList[0], (sizeof(Index)*sMesh.indexCount));
 			pek += sizeof(Index)*sMesh.indexCount;
 
-			memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
+			std::memcpy(pek, (char*)&u[0], sizeof(float)*u.length());
 			pek += sizeof(float)*u.length();
 
-			memcpy(pek, (char*)&v[0], sizeof(float)*u.length());
+			std::memcpy(pek, (char*)&v[0], sizeof(float)*u.length());
 			pek += sizeof(float)*u.length();
 
-			memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
+			std::memcpy(pek, (char*)&uvIds[0], sizeof(Index)*sMesh.uvIndexCount);
 			//pek += sizeof(Index)*sMesh.uvIndexCount;
 
-			//memcpy(pek, materialName.asChar(), sMesh.materialNameLength + 1);
+			//std::memcpy(pek, materialName.asChar(), sMesh.materialNameLength + 1);
 
 			while (true)
 			{
@@ -1616,27 +1617,27 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 				char * pek = msg;
 				size_t length = 0;
 
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				pek += sizeof(MainHeader);
 				length += sizeof(MainHeader);
 
-				memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
+				std::memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
 				pek += sizeof(modifyVertex);
 				length += sizeof(modifyVertex);
 
-				memcpy(pek, mTran.name().asChar(), mVert.nameLength);
+				std::memcpy(pek, mTran.name().asChar(), mVert.nameLength);
 				pek += mVert.nameLength;
 				length += mVert.nameLength;
 
-				memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
+				std::memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
 				pek += sizeof(Index)*mVert.indexLength;
 				length += sizeof(Index)*mVert.indexLength;
 
-				memcpy(pek, (char*)&offsetIdList[0], sizeof(Index)*mVert.indexLength);
+				std::memcpy(pek, (char*)&offsetIdList[0], sizeof(Index)*mVert.indexLength);
 				pek += sizeof(Index)*mVert.indexLength;
 				length += sizeof(Index)*mVert.indexLength;
 
-				memcpy(pek, (char*)&normId[0], sizeof(Index)*mVert.normalIdLength);
+				std::memcpy(pek, (char*)&normId[0], sizeof(Index)*mVert.normalIdLength);
 				pek += sizeof(Index)*mVert.normalIdLength;
 				length += sizeof(Index)*mVert.normalIdLength;
 
@@ -1652,7 +1653,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 					tempSendVert.translation = mIt.position();
 					//sendVertex vertInfo{ mIt.index() , mIt.position()};
 
-					memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+					std::memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
 					pek += sizeof(sendVertex);
 					length += sizeof(sendVertex);
 
@@ -1699,7 +1700,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 						//fvmIt.next();
 						tempSendNormal.translation = vNormals[i];
 						
-						memcpy(pek, (char*)&tempSendNormal, sizeof(sendNormal));
+						std::memcpy(pek, (char*)&tempSendNormal, sizeof(sendNormal));
 						pek += sizeof(sendNormal);
 						length += sizeof(sendNormal);
 					}
@@ -1741,27 +1742,27 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 				modifyVertex mVert{ mTran.name().length(), 0, indexList.length(), normId.length() };
 				size_t length = 0;
 
-				memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+				std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 				pek += sizeof(MainHeader);
 				length += sizeof(MainHeader);
 
-				//memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
+				//std::memcpy(pek, (char*)&mVert, sizeof(modifyVertex));
 				pek += sizeof(modifyVertex);
 				length += sizeof(modifyVertex);
 
-				memcpy(pek, mTran.name().asChar(), mVert.nameLength);
+				std::memcpy(pek, mTran.name().asChar(), mVert.nameLength);
 				pek += mVert.nameLength;
 				length += mVert.nameLength;
 
-				memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
+				std::memcpy(pek, (char*)&indexList[0], sizeof(Index)*mVert.indexLength);
 				pek += sizeof(Index)*mVert.indexLength;
 				length += sizeof(Index)*mVert.indexLength;
 
-				memcpy(pek, (char*)&offsetIdList[0], sizeof(Index)*mVert.indexLength);
+				std::memcpy(pek, (char*)&offsetIdList[0], sizeof(Index)*mVert.indexLength);
 				pek += sizeof(Index)*mVert.indexLength;
 				length += sizeof(Index)*mVert.indexLength;
 
-				memcpy(pek, (char*)&normId[0], sizeof(Index)*mVert.normalIdLength);
+				std::memcpy(pek, (char*)&normId[0], sizeof(Index)*mVert.normalIdLength);
 				pek += sizeof(Index)*mVert.normalIdLength;
 				length += sizeof(Index)*mVert.normalIdLength;
 				
@@ -1791,7 +1792,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 						tempSendVert.translation = mIt.position();
 						//sendVertex vertInfo{ mIt.index() , mIt.position()};
 
-						memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+						std::memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
 						pek += sizeof(sendVertex);
 						length += sizeof(sendVertex);
 
@@ -1806,7 +1807,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 							//fvmIt.next();
 							tempSendNormal.translation = vNormals[i];
 
-							memcpy(pek, (char*)&tempSendNormal, sizeof(sendNormal));
+							std::memcpy(pek, (char*)&tempSendNormal, sizeof(sendNormal));
 							pek += sizeof(sendNormal);
 							length += sizeof(sendNormal);
 						}
@@ -1850,14 +1851,14 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 						tempSendVert.translation.y = pointz[i].y;
 						tempSendVert.translation.z = pointz[i].z;
 
-						memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+						std::memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
 						pek += sizeof(sendVertex);
 						length += sizeof(sendVertex);
 						mVert.nrOfVertices++;
 					}*/
 				}
 
-				memcpy((msg + sizeof(MainHeader)), (char*)&mVert, sizeof(modifyVertex));
+				std::memcpy((msg + sizeof(MainHeader)), (char*)&mVert, sizeof(modifyVertex));
 
 
 				//for (; !mIt.isDone(); mIt.next())
@@ -1866,7 +1867,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 				//	tempSendVert.translation = mIt.position();
 				//	//sendVertex vertInfo{ mIt.index() , mIt.position()};
 
-				//	memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
+				//	std::memcpy(pek, (char*)&tempSendVert, sizeof(sendVertex));
 				//	pek += sizeof(sendVertex);
 				//	length += sizeof(sendVertex);
 				//}
@@ -1892,16 +1893,16 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 		+ 1;
 	char * pek = msg;
 	
-	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+	std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 	pek += sizeof(MainHeader);
 
-	memcpy(pek, (char*)&mSend, sizeof(nameChange));
+	std::memcpy(pek, (char*)&mSend, sizeof(nameChange));
 	pek += sizeof(nameChange);
 
-	memcpy(pek, str.asChar(), mSend.nameLength);
+	std::memcpy(pek, str.asChar(), mSend.nameLength);
 	pek += mSend.nameLength + 1;
 
-	memcpy(pek, MFnDagNode(node).name().asChar(), mSend.newNameLength);
+	std::memcpy(pek, MFnDagNode(node).name().asChar(), mSend.newNameLength);
 
 	producer->push(msg, length);
 }
@@ -1935,25 +1936,25 @@ void changedNameFunction(MObject &node, const MString &str, void*clientData)
 //
 //	MainHeader mHead{ 1 };
 //
-//	memcpy(pek, &mHead, sizeof(MainHeader));
+//	std::memcpy(pek, &mHead, sizeof(MainHeader));
 //	pek += sizeof(MainHeader);
 //
-//	memcpy(pek, &mCam, sizeof(CreateCamera));
+//	std::memcpy(pek, &mCam, sizeof(CreateCamera));
 //	pek += sizeof(CreateCamera);
 //
-//	memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
+//	std::memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
 //	pek += mCam.nameLength;
 //
-//	/*memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
+//	/*std::memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
 //	pek += sizeof(Matrix);*/
 //	
-//	memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
+//	std::memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
 //	pek += sizeof(floatMatrix);
 //
-//	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+//	std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 //	pek += sizeof(Vector4);
 //
-//	memcpy(pek, (char*)&sTrans, sizeof(Vector));
+//	std::memcpy(pek, (char*)&sTrans, sizeof(Vector));
 //
 //	while (true)
 //	{
@@ -2012,25 +2013,25 @@ bool createViewportCamera()
 
 		MainHeader mHead{ 1 };
 
-		memcpy(pek, &mHead, sizeof(MainHeader));
+		std::memcpy(pek, &mHead, sizeof(MainHeader));
 		pek += sizeof(MainHeader);
 
-		memcpy(pek, &mCam, sizeof(CreateCamera));
+		std::memcpy(pek, &mCam, sizeof(CreateCamera));
 		pek += sizeof(CreateCamera);
 
-		memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
+		std::memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
 		pek += mCam.nameLength;
 
-		/*memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
+		/*std::memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
 		pek += sizeof(Matrix);*/
 
-		memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
+		std::memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
 		pek += sizeof(floatMatrix);
 
-		memcpy(pek, (char*)&sRot, sizeof(Vector4));
+		std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 		pek += sizeof(Vector4);
 
-		memcpy(pek, (char*)&sTrans, sizeof(Vector));
+		std::memcpy(pek, (char*)&sTrans, sizeof(Vector));
 
 		while (true)
 		{
@@ -2079,25 +2080,25 @@ bool createViewportCamera()
 //
 //	MainHeader mHead{ 1 };
 //
-//	memcpy(pek, &mHead, sizeof(MainHeader));
+//	std::memcpy(pek, &mHead, sizeof(MainHeader));
 //	pek += sizeof(MainHeader);
 //
-//	memcpy(pek, &mCam, sizeof(CreateCamera));
+//	std::memcpy(pek, &mCam, sizeof(CreateCamera));
 //	pek += sizeof(CreateCamera);
 //
-//	memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
+//	std::memcpy(pek, (char*)transform.name().asChar(), mCam.nameLength);
 //	pek += mCam.nameLength;
 //
-//	/*memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
+//	/*std::memcpy(pek, (char*)&MFnTransform(node).transformationMatrix(), sizeof(Matrix));
 //	pek += sizeof(Matrix);*/
 //
-//	memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
+//	std::memcpy(pek, (char*)&sCamera.projectionMatrix(), sizeof(floatMatrix));
 //	pek += sizeof(floatMatrix);
 //
-//	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+//	std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
 //	pek += sizeof(Vector4);
 //
-//	memcpy(pek, (char*)&sTrans, sizeof(Vector));
+//	std::memcpy(pek, (char*)&sTrans, sizeof(Vector));
 //
 //	while (true)
 //	{
@@ -2128,13 +2129,13 @@ void nodeRemoved(MObject &node, void *data)
 	Index deleteInfo{ MFnTransform(node).name().length() };
 
 	char * pek = msg;
-	memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+	std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 	pek += sizeof(MainHeader);
 
-	memcpy(pek, (char*)&deleteInfo, sizeof(Index));
+	std::memcpy(pek, (char*)&deleteInfo, sizeof(Index));
 	pek += sizeof(Index);
 
-	memcpy(pek, MFnTransform(node).name().asChar(), deleteInfo.nr);
+	std::memcpy(pek, MFnTransform(node).name().asChar(), deleteInfo.nr);
 
 	size_t length =
 		sizeof(MainHeader) +
