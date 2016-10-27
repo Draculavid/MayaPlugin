@@ -35,6 +35,7 @@
 #include <maya/MItMeshVertex.h>
 #include <maya/MItDependencyGraph.h>
 #include <maya/MItMeshFaceVertex.h>
+#include <maya/MFnMatrixData.h>
 
 // Wrappers
 #include <maya/MGlobal.h>

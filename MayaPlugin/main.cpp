@@ -19,6 +19,8 @@ MObject modelQueue[QUEUE_VALUE];
 MString lastCamera = "";
 unsigned int nrInQueue = 0;
 char * msg;
+Vector lastTrans, lastScale;
+Vector4 lastRot;
 //std::queue <MObject>modelQueue;
 
 void popQueue(int * position)
@@ -39,6 +41,15 @@ bool appendQueue(MObject & node)
 		modelQueue[nrInQueue] = node;
 		nrInQueue++;
 		return true;
+	}
+	return false;
+}
+bool existsInQueue(MString & name)
+{
+	for (int i = 0; i < nrInQueue; ++i)
+	{
+		if (name == MFnTransform(modelQueue[i]).name())
+			return true;
 	}
 	return false;
 }
@@ -543,7 +554,66 @@ bool setMaterial(MString&mesh, MString&material, char *& pek, int length)
 //		}
 //	}
 //}
+void childMovement(char * pek, size_t &length, MObject & mNode, unsigned int & nrOfMeshes)
+{
+	//MGlobal::displayInfo(mTrans.name());
+	MFnTransform mTrans = mNode;
 
+	Vector sTran, sScale; 
+	Vector4 sRot; double tempRot[4], tempScale[3];
+	/*skriv in all skit här*/
+
+	MFnDependencyNode depNode = mNode;
+	MFnMatrixData pMatrix = depNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
+	MMatrix transMatrix = mTrans.transformationMatrix()*pMatrix.matrix();
+
+	/*MMatrix transMatrix = mTrans.transformationMatrix();
+	transMatrix *= parentMatrix;*/
+
+	/*getting scale*/
+	MTransformationMatrix(transMatrix).getScale(tempScale, MSpace::kTransform);
+	sScale = tempScale;
+
+	/*getting translation*/
+	sTran = MTransformationMatrix(transMatrix).getTranslation(MSpace::kTransform);
+
+	/*getting rotation*/
+	MTransformationMatrix(transMatrix).getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3]);
+	sRot.x = tempRot[0];
+	sRot.y = tempRot[1];
+	sRot.z = tempRot[2];
+	sRot.w = tempRot[3];
+
+	unsigned int nameLength = mTrans.name().length();
+
+	memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+	pek += sizeof(unsigned int);
+	length += sizeof(unsigned int);
+
+	memcpy(pek, mTrans.name().asChar(), nameLength);
+	pek += nameLength;
+	length += nameLength;
+
+	memcpy(pek, (char*)&sScale, sizeof(Vector));
+	pek += sizeof(Vector);
+	length += sizeof(Vector);
+
+	memcpy(pek, (char*)&sRot, sizeof(Vector4));
+	pek += sizeof(Vector4);
+	length += sizeof(Vector4);
+
+	memcpy(pek, (char*)&sTran, sizeof(Vector));
+	pek += sizeof(Vector);
+	length += sizeof(Vector);
+
+	nrOfMeshes++;
+	unsigned int childCount = mTrans.childCount();
+	if (childCount > 1)
+	{
+		for (int i = 1; i < childCount; ++i)
+			childMovement(pek, length, mTrans.child(i), nrOfMeshes);
+	}
+}
 void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlags &modified, void *clientData)
 {
 	if (MFnTransform(transformNode).child(0).apiType() == MFn::kCamera)
@@ -584,6 +654,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				if (mNode2 == transformNode)
 					break;
 			}*/
+			//MGlobal::displayInfo(MFnTransform(transformNode).name());
 
 			if (mNode == transformNode || mNode2 == MFnTransform(transformNode).child(0))
 			{
@@ -594,6 +665,8 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 				//M3dView kiss;
 				//kiss.active3dView().updateViewingParameters();
+
+				//MFnMatrixData parentMatrix = mNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
 
 				//MGlobal::displayInfo(trans.name() + " worldmatrix changed");
 				MainHeader mHead{ 4 };
@@ -623,30 +696,37 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 							iter.getDependNode(mNode);
 							MFnTransform trans = mNode;
-							//MString ballefjong;
-							//ballefjong += trans.name();
-							//MGlobal::displayInfo(ballefjong);
-
-							//sList.getDagPath(i, nodePath);
-							nameLength = trans.name().length();
-
-							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-							pek += sizeof(unsigned int);
-							length += sizeof(unsigned int);
-
-							std::memcpy(pek, trans.name().asChar(), nameLength);
-							pek += nameLength;
-							length += nameLength;
-
-
 							Vector sScale; double tempScale[3];
 
 							trans.getScale(tempScale);
 							sScale = tempScale;
 
-							std::memcpy(pek, (char*)&sScale, sizeof(Vector));
-							pek += sizeof(Vector);
-							length += sizeof(Vector);
+							if (memcmp(&lastScale, &sScale, sizeof(Vector)) != 0)
+							{
+								lastScale = sScale;
+								//MString ballefjong;
+								//ballefjong += trans.name();
+								//MGlobal::displayInfo(ballefjong);
+
+								//sList.getDagPath(i, nodePath);
+								nameLength = trans.name().length();
+
+								std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+								pek += sizeof(unsigned int);
+								length += sizeof(unsigned int);
+
+								std::memcpy(pek, trans.name().asChar(), nameLength);
+								pek += nameLength;
+								length += nameLength;
+
+
+
+								std::memcpy(pek, (char*)&sScale, sizeof(Vector));
+								pek += sizeof(Vector);
+								length += sizeof(Vector);
+							}
+							else
+								return;
 						}
 					}
 					else
@@ -693,6 +773,41 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 
 					producer->push(msg, length);
 
+					iter.getDependNode(mNode);
+					MFnTransform trans = mNode;
+					MFnDependencyNode depNode = mNode;
+					unsigned int childCount = trans.childCount();
+					if (childCount > 1)
+					{
+						MainHeader mHead{ 4 };
+
+						char * pek = msg;
+						std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+						pek += sizeof(MainHeader);
+
+						Transformation mTransform{ 0 , 3 };
+						size_t childLength = 0;
+						unsigned int nameLength = 0;
+
+						//MFnMatrixData parentMatrix = depNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
+						//MMatrix bajs = trans.transformationMatrix();
+						//bajs *= parentMatrix.matrix();
+
+						pek += sizeof(Transformation);
+						for (int i = 1; i < childCount; ++i)
+						{
+							//MGlobal::displayInfo(MFnTransform(trans.child(i)).name());
+							childMovement(pek, childLength, trans.child(i), mTransform.nameLength);
+						}
+						childLength +=
+							sizeof(MainHeader)
+							+ sizeof(Transformation);
+
+						std::memcpy((msg + sizeof(MainHeader)), (char*)&mTransform, sizeof(Transformation));
+
+						producer->push(msg, childLength);
+					}
+
 				}
 				else if (modified & MDagMessage::kRotation)
 				{
@@ -734,16 +849,6 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							MFnTransform trans = mNode;
 
 							//sList.getDagPath(i, nodePath);
-							nameLength = trans.name().length();
-
-							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-							pek += sizeof(unsigned int);
-							length += sizeof(unsigned int);
-
-							std::memcpy(pek, trans.name().asChar(), nameLength);
-							pek += nameLength;
-							length += nameLength;
-
 							double tempRot[4]; Vector4 sRot;
 
 							trans.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
@@ -752,9 +857,38 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							sRot.z = (float)tempRot[2];
 							sRot.w = (float)tempRot[3];
 
-							std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
-							pek += sizeof(Vector4);
-							length += sizeof(Vector4);
+							if (memcmp(&lastRot, &sRot, sizeof(Vector4)) != 0)
+							{
+								lastRot = sRot;
+								//if (memcmp(&lastTrans, &sTran, sizeof(Vector)) != 0)
+								//{
+								MFnDependencyNode depNode = mNode;
+								MFnMatrixData parentMatrix = depNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
+								MMatrix pMatrix = parentMatrix.matrix();
+
+								MTransformationMatrix(trans.transformationMatrix()*pMatrix).getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+								sRot.x = (float)tempRot[0];
+								sRot.y = (float)tempRot[1];
+								sRot.z = (float)tempRot[2];
+								sRot.w = (float)tempRot[3];
+
+								nameLength = trans.name().length();
+
+								std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+								pek += sizeof(unsigned int);
+								length += sizeof(unsigned int);
+
+								std::memcpy(pek, trans.name().asChar(), nameLength);
+								pek += nameLength;
+								length += nameLength;
+
+
+								std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
+								pek += sizeof(Vector4);
+								length += sizeof(Vector4);
+							}
+							else
+								return;
 						}
 					}
 					else
@@ -810,6 +944,41 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 				//modifiedTime = 0;
 
 					producer->push(msg, length);
+
+					iter.getDependNode(mNode);
+					MFnTransform trans = mNode;
+					MFnDependencyNode depNode = mNode;
+					unsigned int childCount = trans.childCount();
+					if (childCount > 1)
+					{
+						MainHeader mHead{ 4 };
+
+						char * pek = msg;
+						std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+						pek += sizeof(MainHeader);
+
+						Transformation mTransform{ 0 , 3 };
+						size_t childLength = 0;
+						unsigned int nameLength = 0;
+
+						//MFnMatrixData parentMatrix = depNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
+						//MMatrix bajs = trans.transformationMatrix();
+						//bajs *= parentMatrix.matrix();
+
+						pek += sizeof(Transformation);
+						for (int i = 1; i < childCount; ++i)
+						{
+							//MGlobal::displayInfo(MFnTransform(trans.child(i)).name());
+							childMovement(pek, childLength, trans.child(i), mTransform.nameLength);
+						}
+						childLength +=
+							sizeof(MainHeader)
+							+ sizeof(Transformation);
+
+						std::memcpy((msg + sizeof(MainHeader)), (char*)&mTransform, sizeof(Transformation));
+
+						producer->push(msg, childLength);
+					}
 				}
 				else if (modified & MDagMessage::kTranslation)
 				{
@@ -826,7 +995,7 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
 					pek += sizeof(MainHeader);
 
-					Transformation mTransform{ sList.length() , 2 };
+					Transformation mTransform{ sList.length() , 2 }; //edit this in runtime!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					size_t length = 0;
 					unsigned int nameLength = 0;
 
@@ -834,35 +1003,69 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 					pek += sizeof(Transformation);
 
 
+					
 
 					/*std::memcpy(pek, (char*)&sTran, sizeof(Vector));
 					pek += sizeof(Vector);*/
 					//MTransformationMatrix test = trans.transformation();
 					//MString kuken;
+					//iter.getDependNode(mNode);
+					//MFnTransform trans = mNode;
 					if (mNode.apiType() == MFn::kTransform)
 					{
 						for (; !iter.isDone(); iter.next())
 						{
-							//MObject mNode;
 							iter.getDependNode(mNode);
 							MFnTransform trans = mNode;
-
-							nameLength = trans.name().length();
-
-							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-							pek += sizeof(unsigned int);
-							length += sizeof(unsigned int);
-
-							std::memcpy(pek, trans.name().asChar(), nameLength);
-							pek += nameLength;
-							length += nameLength;
-
 							Vector sTran;
 							sTran = trans.getTranslation(MSpace::kTransform, NULL);
+							/*if (lastTrans.x != sTran.x &&
+								lastTrans.y != sTran.y &&
+								lastTrans.z != sTran.z)
+							{
+							
+							}*/
+							//int balle = memcmp(&lastTrans, &sTran, sizeof(Vector));
+							//lastTrans = sTran;
+							if (memcmp(&lastTrans, &sTran, sizeof(Vector)) != 0) 
+							{
+								lastTrans = sTran;
 
-							std::memcpy(pek, (char*)&sTran, sizeof(Vector));
-							pek += sizeof(Vector);
-							length += sizeof(Vector);
+
+								
+
+								//lastNode = mNode;
+								MFnDependencyNode depNode = mNode;
+								MFnMatrixData parentMatrix = depNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
+								MMatrix pMatrix = parentMatrix.matrix();
+
+								sTran = MTransformationMatrix(trans.transformationMatrix()*pMatrix).getTranslation(MSpace::kTransform);
+
+								nameLength = trans.name().length();
+
+								std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+								pek += sizeof(unsigned int);
+								length += sizeof(unsigned int);
+
+								std::memcpy(pek, trans.name().asChar(), nameLength);
+								pek += nameLength;
+								length += nameLength;
+
+
+								/*MString bajs;
+								bajs += sTran.x;
+								bajs += ", ";
+								bajs += sTran.y;
+								bajs += ", ";
+								bajs += sTran.z;
+								MGlobal::displayInfo(bajs);*/
+
+								std::memcpy(pek, (char*)&sTran, sizeof(Vector));
+								pek += sizeof(Vector);
+								length += sizeof(Vector);
+							}
+							else
+								return;
 						}
 					}
 					else
@@ -872,23 +1075,28 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 							//MObject mNode;
 							iter.getDependNode(MFnMesh(mNode2).parent(0));
 							MFnTransform trans = MFnMesh(mNode2).parent(0);
-
-							nameLength = trans.name().length();
-
-							std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-							pek += sizeof(unsigned int);
-							length += sizeof(unsigned int);
-
-							std::memcpy(pek, trans.name().asChar(), nameLength);
-							pek += nameLength;
-							length += nameLength;
-
 							Vector sTran;
 							sTran = trans.getTranslation(MSpace::kTransform, NULL);
 
-							std::memcpy(pek, (char*)&sTran, sizeof(Vector));
-							pek += sizeof(Vector);
-							length += sizeof(Vector);
+							if (memcmp(&lastTrans, &sTran, sizeof(Vector)) != 0)
+							{
+
+
+								nameLength = trans.name().length();
+
+								std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
+								pek += sizeof(unsigned int);
+								length += sizeof(unsigned int);
+
+								std::memcpy(pek, trans.name().asChar(), nameLength);
+								pek += nameLength;
+								length += nameLength;
+
+
+								std::memcpy(pek, (char*)&sTran, sizeof(Vector));
+								pek += sizeof(Vector);
+								length += sizeof(Vector);
+							}
 						}
 					}
 					//MGlobal::displayInfo(kuken);
@@ -898,21 +1106,43 @@ void WorldMatrixModified(MObject &transformNode, MDagMessage::MatrixModifiedFlag
 						+ sizeof(Transformation);
 					//+ sizeof(Vector);
 
-				/*this will also vary*/
-				//char * pek = msg;
-				//std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-				//pek += sizeof(MainHeader);
-
-				//std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-				//pek += sizeof(Transformation);
-
-				//std::memcpy(pek, (char*)trans.name().asChar(), mTransform.nameLength);
-				//pek += mTransform.nameLength;
-
-
-				//modifiedTime = 0;
-
 					producer->push(msg, length);
+
+
+					iter.getDependNode(mNode);
+					MFnTransform trans = mNode;
+					MFnDependencyNode depNode = mNode;
+					unsigned int childCount = trans.childCount();
+					if (childCount > 1)
+					{
+						MainHeader mHead{ 4 };
+
+						char * pek = msg;
+						std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
+						pek += sizeof(MainHeader);
+
+						Transformation mTransform{ 0 , 3 }; 
+						size_t childLength = 0;
+						unsigned int nameLength = 0;
+
+						//MFnMatrixData parentMatrix = depNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
+						//MMatrix bajs = trans.transformationMatrix();
+						//bajs *= parentMatrix.matrix();
+
+						pek += sizeof(Transformation);
+						for (int i = 1; i < childCount; ++i)
+						{
+							//MGlobal::displayInfo(MFnTransform(trans.child(i)).name());
+							childMovement(pek, childLength, trans.child(i), mTransform.nameLength);
+						}
+						childLength +=
+							sizeof(MainHeader)
+							+ sizeof(Transformation);
+
+						std::memcpy((msg+sizeof(MainHeader)), (char*)&mTransform, sizeof(Transformation));
+
+						producer->push(msg, childLength);
+					}
 				}
 			}
 		}
@@ -1332,14 +1562,18 @@ bool createMesh(MObject &node)
 			Vector4 sRot;
 			double tempScale[3], tempRot[4];
 
-			sTran = transform.getTranslation(MSpace::kTransform, NULL);
-			transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
+			MFnDependencyNode depNode = mMesh.parent(0);
+			MFnMatrixData parentMatrix = depNode.findPlug("pm").elementByLogicalIndex(0).asMObject();
+			MTransformationMatrix pMatrix = transform.transformationMatrix()*parentMatrix.matrix();
+
+			sTran = pMatrix.getTranslation(MSpace::kTransform, NULL);
+			pMatrix.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
 			sRot.x = (float)tempRot[0];
 			sRot.y = (float)tempRot[1];
 			sRot.z = (float)tempRot[2];
 			sRot.w = (float)tempRot[3];
 
-			transform.getScale(tempScale);
+			pMatrix.getScale(tempScale, MSpace::kTransform);
 			sScal = tempScale;
 
 			/*the normals*/
@@ -2119,7 +2353,7 @@ bool createViewportCamera()
 #pragma region Modified
 void topologyChanged(MObject & node, void * data)
 {
-	MGlobal::displayInfo("haärasdce");
+	//MGlobal::displayInfo("haärasdce");
 	meshTopChanged = true;
 }
 void nodeRemoved(MObject &node, void *data)
@@ -2237,10 +2471,13 @@ void addedNodeFunction(MObject &node, void*clientData) //look at this function w
 			}
 			else
 				MGlobal::displayInfo("failed to connect attributes");
-			if (!createMesh(node))
+			if (!existsInQueue(MFnMesh(node).name()))
 			{
-				MGlobal::displayInfo(MFnTransform(node).name() + "sent to the queue");
-				appendQueue(node);
+				if (!createMesh(node))
+				{
+					MGlobal::displayInfo(MFnMesh(node).name() + "sent to the queue");
+					appendQueue(node);
+				}
 			}
 		//}
 	}

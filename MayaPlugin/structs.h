@@ -67,6 +67,11 @@ struct Vector//vectors are shit
 		z = (float)other.z;
 		return *this;
 	}
+	//inline bool operator!=(const Vector& lhs, const Vector& rhs)
+	//{
+	//	return true;
+	//	//return !(lhs == rhs); 
+	//}
 };
 struct sendVertex
 {
