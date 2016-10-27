@@ -124,15 +124,15 @@ int createMaterial(MObject &node, bool isPhong, char *& pek)
 	MString materialName;
 	MString MeshName;
 
-	MGlobal::displayInfo("\nMATERIAL FOUND\n");
+	//MGlobal::displayInfo("\nMATERIAL FOUND\n");
 
 	MFnLambertShader lambert(node);
 
-	MString INFO = "NAME: ";
-	INFO += lambert.name();
-	INFO += "\n";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
+//	MString INFO = "NAME: ";
+//	INFO += lambert.name();
+//	INFO += "\n";
+//	MGlobal::displayInfo(INFO);
+//	INFO = "";
 
 
 	materialName = lambert.name();
@@ -141,51 +141,51 @@ int createMaterial(MObject &node, bool isPhong, char *& pek)
 	if (getTextureFileInfo(node, tex::textureTypes[tex::NORMAL], paths[tex::NORMAL]))
 	{
 		mHeader.normalPathLength = paths[tex::NORMAL].length();
-		MString INFO = "Normal: ";
-		INFO += paths[tex::NORMAL];
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
+		//MString INFO = "Normal: ";
+		//INFO += paths[tex::NORMAL];
+		//INFO += "\n";
+		//MGlobal::displayInfo(INFO);
+		//INFO = "";
 	}
 
-	MGlobal::displayInfo("Ambient: ");
+	//MGlobal::displayInfo("Ambient: ");
 	if (!getTextureFileInfo(node, tex::textureTypes[tex::AMBIENT], paths[tex::AMBIENT]))
 	{
 
 
 		lambert.ambientColor().get((float*)&amb);
-		INFO += amb.r;
-		INFO += ", ";
-		INFO += amb.g;
-		INFO += ", ";
-		INFO += amb.b;
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
+		//INFO += amb.r;
+		//INFO += ", ";
+		//INFO += amb.g;
+		//INFO += ", ";
+		//INFO += amb.b;
+		//INFO += "\n";
+		//MGlobal::displayInfo(INFO);
+		//INFO = "";
 	}
 	mHeader.ambientPathLength = paths[tex::AMBIENT].length();
 
-	MGlobal::displayInfo("Diffuse: \n");
+	//MGlobal::displayInfo("Diffuse: \n");
 	if (!getTextureFileInfo(node, tex::textureTypes[tex::DIFFUSE], paths[tex::DIFFUSE]))
 	{
 		lambert.color().get((float*)&diff);
-		INFO += diff.r;
-		INFO += ", ";
-		INFO += diff.g;
-		INFO += ", ";
-		INFO += diff.b;
-		INFO += ", ";
+		//INFO += diff.r;
+		//INFO += ", ";
+		//INFO += diff.g;
+		//INFO += ", ";
+		//INFO += diff.b;
+		//INFO += ", ";
 	}
 	mHeader.texturePathLength = paths[tex::DIFFUSE].length();
-	INFO += "Color: ";
-	INFO += paths[tex::DIFFUSE];
-	INFO += "\n";
-	diff.coeff = lambert.diffuseCoeff();
-	INFO += "diffuse coefficient : ";
-	INFO += diff.coeff;
-	INFO += ", ";
-	MGlobal::displayInfo(INFO);
-	INFO = "";
+	//INFO += "Color: ";
+	//INFO += paths[tex::DIFFUSE];
+	//INFO += "\n";
+	//diff.coeff = lambert.diffuseCoeff();
+	//INFO += "diffuse coefficient : ";
+	//INFO += diff.coeff;
+	//INFO += ", ";
+	//MGlobal::displayInfo(INFO);
+	//INFO = "";
 
 
 	if (isPhong)
@@ -199,22 +199,22 @@ int createMaterial(MObject &node, bool isPhong, char *& pek)
 			mHeader.specularPathlength = paths[tex::SPECULAR].length();
 
 			phong.specularColor().get((float*)&spec);
-			INFO += spec.r;
-			INFO += ", ";
-			INFO += spec.g;
-			INFO += ", ";
-			INFO += spec.b;
-			INFO += "\n";
-			MGlobal::displayInfo(INFO);
-			INFO = "";
+			//INFO += spec.r;
+			//INFO += ", ";
+			//INFO += spec.g;
+			//INFO += ", ";
+			//INFO += spec.b;
+			//INFO += "\n";
+			//MGlobal::displayInfo(INFO);
+			//INFO = "";
 		}
 		mHeader.specularPathlength = paths[tex::SPECULAR].length();
 		spec.shine = phong.cosPower();
-		MGlobal::displayInfo("Shine:");
-		INFO += spec.shine;
-		INFO += "\n";
-		MGlobal::displayInfo(INFO);
-		INFO = "";
+		//MGlobal::displayInfo("Shine:");
+		//INFO += spec.shine;
+		//INFO += "\n";
+		//MGlobal::displayInfo(INFO);
+		//INFO = "";
 
 		//MGlobal::displayInfo("Reflection color:");
 		//INFO += phong.reflectedColor().r;
@@ -1289,111 +1289,52 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		for (int i = 0; i < connections.length(); i++)
 		{
 			MFnDependencyNode surfaceShader = connections[i].node();
-			MGlobal::displayInfo(surfaceShader.name());
+
+			MString FITTA;
+			FITTA += surfaceShader.name().asChar();
 
 			MPlugArray setMembConnections;
 			MPlug dagSetMembPlugDADDY = surfaceShader.findPlug("dagSetMembers");
 
-			for (unsigned int k = 0; k < dagSetMembPlugDADDY.numElements(); k++)
-			{
-				dagSetMembPlugDADDY[k].connectedTo(setMembConnections, true, false, &res);
-				for (unsigned int j = 0; j < setMembConnections.length(); j++)//(-1 för att inte itterera hypergraph bollen)
-				{
-					//RUMPA += (setMembConnections[i].node()).child(0);
-					MString meshName = ((MFnTransform)((MFnMesh)setMembConnections[i].node()).parent(0)).name();
-					if (strcmp(meshName.asChar(), "shaderBallGeom1") != 0)
-					{
-						int length;
-						char * pek;
-						RUMPA += meshName;
 
-						//length = createMaterial((MObject)surfaceConnections[i].node(), ((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong), pek);
-						length = createMaterial((MObject)plug.node(), ((MObject)plug.node()).hasFn(MFn::kPhong), pek);
-						setMaterial(meshName, materialName, pek, length);
+			if (strcmp(surfaceShader.name().asChar(), "initialParticleSE") != 0)
+			{
+				if (strcmp(plug.name().asChar(), "lambert1.raySampler") != 0)
+				{
+					MGlobal::displayInfo(surfaceShader.name());
+
+					MGlobal::displayInfo((surfaceShader.object()).apiTypeStr());
+					MGlobal::displayInfo(plug.name());
+					MGlobal::displayInfo(otherPlug.name());
+
+					for (unsigned int k = 0; k < dagSetMembPlugDADDY.numElements(); k++)
+					{
+						dagSetMembPlugDADDY[k].connectedTo(setMembConnections, true, false, &res);
+						//int bajssss = setMembConnections[0].info()
+						for (unsigned int j = 0; j < setMembConnections.length(); j++)//(-1 för att inte itterera hypergraph bollen)
+						{
+							//RUMPA += (setMembConnections[i].node()).child(0);
+							MString meshName = ((MFnTransform)((MFnMesh)setMembConnections[i].node()).parent(0)).name();
+							if (strcmp(meshName.asChar(), "shaderBallGeom1") != 0)
+							{
+								int length;
+								char * pek;
+								RUMPA += meshName;
+
+								//length = createMaterial((MObject)surfaceConnections[i].node(), ((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong), pek);
+								length = createMaterial((MObject)plug.node(), ((MObject)plug.node()).hasFn(MFn::kPhong), pek);
+								setMaterial(meshName, materialName, pek, length);
+							}
+						}
 					}
 				}
 			}
 		}
-
-
-		if (Amsg == (Amsg & MNodeMessage::kAttributeSet | MNodeMessage::kIncomingDirection)) //ATTRIBUTE
-		{
-			RUMPA += "ATRUBBUTE!\n";
-			RUMPA += plug.name();
-			//RUMPA += "\n";
-			//RUMPA += otherPlug.name();
-
-		}
-
-		if (Amsg == (Amsg & MNodeMessage::kConnectionMade | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) //TEXTURE ADDED
-		{
-			RUMPA += "TAXTUER ADDED!\n";
-			RUMPA += plug.name();
-			RUMPA += "\n";
-			RUMPA += otherPlug.name();
-		}
-
-		if (Amsg == (Amsg & MNodeMessage::kConnectionBroken | MNodeMessage::kIncomingDirection | MNodeMessage::kOtherPlugSet)) //TEXTURE REMOVED
-		{
-			RUMPA += "TAXTUER REMOVED!\n";
-			RUMPA += plug.name();
-			RUMPA += "\n";
-			RUMPA += otherPlug.name();
-
-		}
-
 	}
-	MGlobal::displayInfo(RUMPA);
-
-
+}
 #pragma region material stuff
 
 
-	MStatus res;
-
-
-
-
-
-	if ((Amsg & MNodeMessage::kConnectionMade && Amsg & MNodeMessage::kOtherPlugSet))
-	{
-		MGlobal::displayInfo("\n----- Changed Material -----\n");
-
-		MPlug surfaceShPlug, maOtherPlug;
-		MPlugArray surfaceConnections;
-
-		MObject mNode = plug.node();
-		MFnDependencyNode surfaceShader = otherPlug.node();
-
-
-
-		MString derp;
-
-
-		surfaceShPlug = (surfaceShader).findPlug("surfaceShader", &res);
-		surfaceShPlug.connectedTo(surfaceConnections, true, false, &res);
-		for (unsigned int i = 0; i < surfaceConnections.length(); i++)
-		{
-			int length;
-			char * pek = nullptr;
-
-			//MObject shaderObject = surfaceConnections[i].node();
-			//((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong);
-			derp += ((MFnDependencyNode)surfaceConnections[i].node()).name();
-			if (((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong))
-				MGlobal::displayInfo("PHONG!");
-
-			MGlobal::displayInfo(derp);
-			length = createMaterial((MObject)surfaceConnections[i].node(), ((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong), pek);
-			//derp += "- material name -\n";
-			//derp += ((MFnDependencyNode)surfaceConnections[i].node()).name();
-			setMaterial(((MFnTransform)((MFnMesh)mNode).parent(0)).name(), ((MFnDependencyNode)surfaceConnections[i].node()).name(), pek, length);
-		}
-		//derp += "\n- mesh name -\n";
-		//derp+= ((MFnTransform)((MFnMesh)mNode).parent(0)).name();
-
-
-	}
 
 	//MObjectArray shaders;
 	//MIntArray shaderIndex;
@@ -1487,7 +1428,7 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		//	cameraMovement = false;
 		//	producer->push(msg, length); 
 
-}
+
 
 bool updateCamera()
 {
@@ -1745,7 +1686,53 @@ bool createMesh(MObject &node)
 void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
 	
+
 	
+
+
+
+
+	if ((Amsg & MNodeMessage::kConnectionMade && Amsg & MNodeMessage::kOtherPlugSet))
+	{
+		MStatus res;
+
+		MGlobal::displayInfo("\n----- Changed Material -----\n");
+
+		MPlug surfaceShPlug, maOtherPlug;
+		MPlugArray surfaceConnections;
+
+		MObject mNode = plug.node();
+		MFnDependencyNode surfaceShader = otherPlug.node();
+
+
+
+		MString derp;
+
+
+		surfaceShPlug = (surfaceShader).findPlug("surfaceShader", &res);
+		surfaceShPlug.connectedTo(surfaceConnections, true, false, &res);
+		for (unsigned int i = 0; i < surfaceConnections.length(); i++)
+		{
+			int length;
+			char * pek = nullptr;
+
+			//MObject shaderObject = surfaceConnections[i].node();
+			//((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong);
+			derp += ((MFnDependencyNode)surfaceConnections[i].node()).name();
+			if (((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong))
+				MGlobal::displayInfo("PHONG!");
+
+			MGlobal::displayInfo(derp);
+			length = createMaterial((MObject)surfaceConnections[i].node(), ((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong), pek);
+			//derp += "- material name -\n";
+			//derp += ((MFnDependencyNode)surfaceConnections[i].node()).name();
+			setMaterial(((MFnTransform)((MFnMesh)mNode).parent(0)).name(), ((MFnDependencyNode)surfaceConnections[i].node()).name(), pek, length);
+		}
+		//derp += "\n- mesh name -\n";
+		//derp+= ((MFnTransform)((MFnMesh)mNode).parent(0)).name();
+
+
+	}
 	/*if an orthographic camera "zooms"*/
 	if ((Amsg == (Amsg & MNodeMessage::kAttributeSet | Amsg & MNodeMessage::kIncomingDirection)))
 	{
