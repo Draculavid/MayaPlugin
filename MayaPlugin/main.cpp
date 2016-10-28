@@ -1261,7 +1261,7 @@ void preRenderCB(const MString& panelName, void * data)
 }
 void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &otherPlug, void*clientData)
 {
-	MString RUMPA;
+
 	MFnDependencyNode pobject = plug.node();
 	MFnDependencyNode pobject2 = otherPlug.node();
 
@@ -1294,9 +1294,6 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 		{
 			MFnDependencyNode surfaceShader = connections[i].node();
 
-			MString FITTA;
-			FITTA += surfaceShader.name().asChar();
-
 			MPlugArray setMembConnections;
 			MPlug dagSetMembPlugDADDY = surfaceShader.findPlug("dagSetMembers");
 
@@ -1323,7 +1320,7 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 							{
 								int length;
 								char * pek;
-								RUMPA += meshName;
+
 
 								//length = createMaterial((MObject)surfaceConnections[i].node(), ((MObject)surfaceConnections[i].node()).hasFn(MFn::kPhong), pek);
 								length = createMaterial((MObject)plug.node(), ((MObject)plug.node()).hasFn(MFn::kPhong), pek);
@@ -1367,70 +1364,6 @@ void matAttributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug
 
 
 
-
-		//	//kanske sätta en bool variabel som du skickar som "data
-		//	//ändra denna i worldmatrix changed för att visa att kameran har flyttat sig
-
-		//	size_t length =
-		//		sizeof(MainHeader)
-		//		+ sizeof(bool)
-		//		+ sizeof(Vector) * 2
-		//		+ sizeof(Vector4);
-
-		//	/*this will also vary*/
-		//	Vector sTrans, sScale; double tempScale[3];
-		//	Vector4 sRot; double tempRot[4];
-
-		//	transform.getScale(tempScale);
-		//	sScale = tempScale;
-
-		//	transform.getRotationQuaternion(tempRot[0], tempRot[1], tempRot[2], tempRot[3], MSpace::kTransform);
-		//	sRot.x = tempRot[0];
-		//	sRot.y = tempRot[1];
-		//	sRot.z = tempRot[2];
-		//	sRot.w = tempRot[3];
-
-		//	sTrans = transform.getTranslation(MSpace::kTransform, NULL);
-		//	unsigned int nameLength = transform.name().length();
-		//	Transformation mTransform{ 1, 3 };
-
-		//	/*temp shit for camera testing*/
-		//	MString mPersp = "persp";
-		//	unsigned int perspL = mPersp.length();
-
-		//	char * pek = msg;
-		//	std::memcpy(pek, (char*)&mHead, sizeof(MainHeader));
-		//	pek += sizeof(MainHeader);
-
-		//	std::memcpy(pek, (char*)&mTransform, sizeof(Transformation));
-		//	pek += sizeof(Transformation);
-
-		//	std::memcpy(pek, (char*)&perspL, sizeof(unsigned int));
-		//	pek += sizeof(unsigned int);
-
-		//	std::memcpy(pek, (char*)mPersp.asChar(), perspL);
-		//	pek += perspL;
-
-		//	/*std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-		//	pek += sizeof(unsigned int);
-
-		//	std::memcpy(pek, (char*)transform.name().asChar(), nameLength);
-		//	pek += nameLength;*/
-
-		//	std::memcpy(pek, (char*)&sScale, sizeof(Vector));
-		//	pek += sizeof(Vector);
-
-		//	std::memcpy(pek, (char*)&sRot, sizeof(Vector4));
-		//	pek += sizeof(Vector4);
-
-		//	std::memcpy(pek, (char*)&sTrans, sizeof(Vector));
-
-		//	//std::memcpy(pek, (char*)&nameLength, sizeof(unsigned int));
-		//	//pek += sizeof(unsigned int);
-
-
-		//	cameraMovement = false;
-		//	producer->push(msg, length); 
 
 
 
@@ -1776,7 +1709,7 @@ void attributeChanged(MNodeMessage::AttributeMessage Amsg, MPlug &plug, MPlug &o
 	}*/
 	if (Amsg & MNodeMessage::kAttributeEval)
 	{
-		MString nams = plug.partialName(false, false, false, false, true);
+		//MString nams = plug.partialName(false, false, false, false, true);
 		//MGlobal::displayInfo(nams);
 		if (plug.partialName() == "o" && meshTopChanged)
 		{
