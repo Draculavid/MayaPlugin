@@ -2711,7 +2711,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 			MGlobal::displayInfo("created 3dpreprocess function");
 		}
 	}
-	newId = MDGMessage::addNodeAddedCallback(addedNodeFunction, kDefaultNodeType, NULL, &loopResults);
+	/*newId = MDGMessage::addNodeAddedCallback(addedNodeFunction, kDefaultNodeType, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
 	{
 		if (myCallbackArray.append(newId) == MS::kSuccess)
@@ -2720,7 +2720,7 @@ EXPORT MStatus initializePlugin(MObject obj)
 		}
 	}
 	else
-		MGlobal::displayInfo("Failed to create addNodeCallback function");
+		MGlobal::displayInfo("Failed to create addNodeCallback function");*/
 
 	newId = MUiMessage::add3dViewPreRenderMsgCallback("modelPanel1", preRenderCB, NULL, &loopResults);
 	if (loopResults == MS::kSuccess)
