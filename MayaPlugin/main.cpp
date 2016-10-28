@@ -169,12 +169,16 @@ int createMaterial(MObject &node, bool isPhong, char *& pek)
 	if (!getTextureFileInfo(node, tex::textureTypes[tex::DIFFUSE], paths[tex::DIFFUSE]))
 	{
 		lambert.color().get((float*)&diff);
+	
+		((float*)&diff)[3] = lambert.diffuseCoeff();
+
 		//INFO += diff.r;
 		//INFO += ", ";
 		//INFO += diff.g;
 		//INFO += ", ";
 		//INFO += diff.b;
 		//INFO += ", ";
+		
 	}
 	mHeader.texturePathLength = paths[tex::DIFFUSE].length();
 	//INFO += "Color: ";
